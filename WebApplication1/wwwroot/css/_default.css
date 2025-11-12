@@ -1,0 +1,130 @@
+
+/* ====== RESET ====== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+}
+
+/* ====== LAYOUT BASE GERAL ====== */
+
+h3.section-title {
+    color: #018DCF !important;
+}
+/* Conteúdo principal */
+#main-content {
+    margin-left: 70px; /* Largura do sidebar recolhido */
+    margin-top: 56px;
+    padding: 30px;
+    min-height: calc(100vh - 56px);
+    background-color: #fff;
+    transition: margin-left 0.3s ease;
+}
+
+    #main-content.expanded {
+        margin-left: 250px; /* Largura do sidebar expandido */
+    }
+
+/* Seções do formulário */
+.form-section {
+    background: #fff;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 25px;
+    border: 1px solid #dee2e6;
+}
+
+.section-title {
+    color: #2c3e50;
+    font-size: 1.4rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e9ecef;
+}
+
+/* Upload area */
+.upload-area {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 30px;
+    text-align: center;
+    background-color: #fafafa;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+    .upload-area:hover {
+        border-color: #018DCF;
+        background-color: #fff;
+    }
+
+/* Footer */
+.footer {
+    background-color: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+    padding: 20px 0;
+    margin-top: 50px;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    #sidebar {
+        position: static;
+        width: 100% !important;
+        height: auto;
+        border-radius: 0;
+    }
+
+    #main-content {
+        margin-left: 0 !important;
+        margin-top: 0;
+        padding: 20px;
+    }
+
+    .sidebar-toggle {
+        display: none;
+    }
+}
+/*BOTAO: VOLTAR / SELECIONAR ARQUIVO /___________________________________*/
+
+.btn.btn-outline-primary {
+    color: #018DCF;
+    border: 1px solid #018DCF;
+
+   
+}
+    .btn.btn-outline-primary:hover {
+        background-color: #018DCF;
+        color: #fff;
+    }
+
+
+
+
+
+
+
+html {
+    font-size: 14px;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+}
+
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}

@@ -1,0 +1,46 @@
+﻿
+<link rel="stylesheet" href="~/css/_header.css" asp-append-version="true" />
+<!-- Header Fixo -->
+<!-- HEADER GLOBAL -->
+<header role="heading" aria-level="1">
+    <!-- 🔹 Barra de acessibilidade -->
+    <div class="barra-acessibilidade bg-primary text-white" role="toolbar" aria-label="Ferramentas de acessibilidade">
+        <div class="container-fluid d-flex justify-content-end align-items-center py-1 px-3">
+            <button class="btn btn-link text-white" id="btnAumentarFonte" aria-label="Aumentar tamanho da fonte">
+                <i class="bi bi-zoom-in" aria-hidden="true"></i>
+                <span> Aumentar fonte</span>
+            </button>
+            <button class="btn btn-link text-white" id="btnDiminuirFonte" aria-label="Diminuir tamanho da fonte">
+                <i class="bi bi-zoom-out" aria-hidden="true"></i>
+                <span> Diminuir fonte</span>
+            </button>
+            <button class="btn btn-link text-white" id="btnAltoContraste" aria-label="Ativar modo de alto contraste">
+                <i class="bi bi-circle-half" aria-hidden="true"></i>
+                <span> Alto contraste</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 🔹 Barra institucional -->
+    <div class="header-principal bg-white border-bottom" role="banner" aria-label="Cabeçalho institucional">
+        <div class="container-fluid d-flex justify-content-between align-items-center py-2 px-2">
+
+            <!-- Logotipo -->
+            <a href="/" class="d-flex align-items-center text-decoration-none" aria-label="Página inicial - Prefeitura de Praia Grande">
+                <img src="/img/PG-logo-horizontal-cor-inovacao.png"
+                     class="me-2 w-100"
+                     alt="Logotipo da Prefeitura de Praia Grande">
+            </a>
+
+            <!-- Notificações -->
+            <button class="btn btn-link position-relative" aria-label="Ver notificações (3 novas)" id="btnNotificacoes">
+                <i class="bi bi-bell-fill fs-5 text-primary"></i>
+                <span class="visually-hidden">Abrir notificações</span>
+                <!-- Badge de notificação -->
+                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
+                    <span class="visually-hidden">3 notificações não lidas</span>
+                </span>
+            </button>
+        </div>
+    </div>
+</header>

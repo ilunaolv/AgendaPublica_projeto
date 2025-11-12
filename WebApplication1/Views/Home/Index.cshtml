@@ -1,8 +1,228 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
-}
+﻿ <!-- Conteúdo Principal -->
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+
+
+
+<main id="main-content" class="col-md-10 ms-sm-auto col-lg-10 px-md-4 form-section">
+
+    <div class="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom bg-light">
+        <h1 class="h3 mb-0 text-dark">Cadastrar Evento</h1>
+        <button type="button" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-2"></i>Voltar
+        </button>
+    </div>
+
+     <form>
+
+        <!-- Banner do Evento -->
+        <div class="form-section">
+            <h3 class="section-title"> <i class="bi bi-images"></i> Banner do evento</h3>
+
+            <div class="upload-area mb-3">
+                <div class="mb-3">
+                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                    <h5>Arraste e solte o banner aqui</h5>
+                    <p class="text-muted">ou clique para selecionar o arquivo</p>
+                </div>
+                <input type="file" class="d-none" id="bannerUpload" accept="image/*">
+                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('bannerUpload').click()">
+                    Selecionar Arquivo
+                </button>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <span class="text-primary me-2">•</span>
+                        <span class="text-muted">
+                            Tamanho máximo: 5MB
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <span class="text-primary me-2">•</span>
+                        <span class="text-muted">
+                            Dimensões recomendadas: 1200x600px
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações Gerais -->
+        <div class="form-section">
+            <h3 class="section-title"> <i class="bi bi-pencil-square"></i> Informações gerais do evento</h3>
+            <div class="row">
+                <div class="col mb-4">
+                    <label class="form-label fw-bold">Nome do evento</label>
+                    <input type="text" class="form-control" value="Maratona Praia Grande 2025 - Correndo pela Saúde e Solidariedade">
+                </div>    
+            </div>
+            <div class="row row-cols-1 row-cols-lg-2">
+                <div class="col mb-4">
+
+                    <label class="form-label fw-bold">Nível de prioridade</label>
+                    <div class="d-flex gap-4">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="prioridade" id="normal">
+                            <label class="form-check-label" for="normal">Normal</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="prioridade" id="alta">
+                            <label class="form-check-label" for="alta">Alta</label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="prioridade" id="inadiavel">
+                            <label class="form-check-label" for="inadiavel">Inadiável</label>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="col mb-4">
+
+                    <label class="form-label fw-bold">Secretaria responsável</label>
+                    <select class="form-select">
+                        <option selected>Selecione...</option>
+                        <option>Secretaria de Planejamento (SEPLAN)</option>
+                        <option>Secretaria de Educação (SEDUC)</option>
+                    </select>
+
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-lg-2">
+                <div class="col mb-4">
+                    <label class="form-label fw-bold">Tipo de evento</label>
+                    <select class="form-select">
+                        <option selected>Selecione...</option>
+                        <option>Publico</option>
+                        <option>Privado</option>
+                    </select>
+                </div>
+
+
+                <div class="col mb-4">
+                    <label class="form-label fw-bold">Categoria</label>
+                    <select class="form-select">
+                        <option selected>Selecione...</option>
+                        <option>Evento cultural</option>
+                        <option>Palestra</option>
+                        <option>Workshop</option>
+                    </select>
+                </div>
+           </div>
+            <div class="row">
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Descrição</label>
+                    <textarea class="form-control" rows="6">
+                    A Maratona Praia Grande 2025 é uma ação esportiva e solidária organizada pela Secretaria de Esportes e Laser, com o objetivo de incentivar práticas saudáveis e promover integração entre os munícipes.  
+                    Durante o percurso, haverá pontos de apoio, ambulância, hidratação e ações de conscientização sobre saúde e sustentabilidade.  
+
+                    O evento será acompanhado por equipes das secretarias de Saúde, Trânsito e Turismo, garantindo segurança e suporte aos participantes.
+                    </textarea>
+                </div>
+           </div>   
+        </div>
+
+        <!-- Programação do evento -->
+        <div class="form-section">
+            <h3 class="section-title"><i class="bi bi-calendar-week"></i> Programação do evento</h3>
+            <div class="row row-cols-1 row-cols-lg-2">
+                <div class="col mb-4">
+                    <label class="form-label fw-bold">Data e Hora de Início</label>
+                    <input type="datetime-local" class="form-control" id="dataHoraInicio">
+                </div>
+                <div class="col mb-4">
+                    <label class="form-label fw-bold">Data e Hora de Término</label>
+                    <input type="datetime-local" class="form-control" id="dataHoraTermino">
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-lg-2">
+                <div class="col mb-4">
+                    <label for="cep" class="form-label fw-bold">CEP</label>
+                    <div class="input-group">
+                        <input type="text" id="cep" class="form-control" placeholder="Digite o CEP">
+                        <button class="btn btn-outline-primary" type="button" id="btnBuscarCEP" title="Buscar CEP">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col mb-4">
+                    <label for="endereco" class="form-label fw-bold">Endereço</label>
+                    <input type="text" id="endereco" class="form-control" placeholder="Rua, avenida, etc.">
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-lg-2">
+                <div class="col mb-4">
+                    <label for="numero" class="form-label fw-bold">Nº</label>
+                    <input type="text" id="numero" class="form-control">
+                </div>
+                <div class="col mb-4">
+                    <label for="bairro" class="form-label fw-bold">Bairro</label>
+                    <select id="bairro" class="form-select">
+                        <option selected disabled>Selecione o bairro</option>
+                        <option>Boqueirão</option>
+                        <option>Aviação</option>
+                        <option>Caiçara</option>
+                        <option>Guilhermina</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row row-cols-1 row-cols-lg-2">
+                <div class="col mb-4">
+                    <label for="complemento" class="form-label fw-bold">Complemento</label>
+                    <input type="text" id="complemento" class="form-control">
+                </div>
+              
+            </div>
+        </div>
+
+        <!-- Programação do evento -->
+        <div class="form-section">
+            <h3 class="section-title"><i class="bi bi-arrow-bar-up"></i> Anexo de documentos</h3>
+           
+           
+            <div class="row">
+                <div class="col mb-4">
+                    <label class="form-label fw-bold">Upload</label>
+                    <div class="input-group">
+                        <input type="file" class="form-control" id="arquivo" accept=".pdf" aria-label="Selecione o arquivo PDF">
+                        <button class="btn btn-primary" type="button" title="Adicionar arquivo">
+                            <i class="bi bi-plus-lg"></i>
+                        </button>
+                        <button class="btn btn-danger" type="button" title="Remover arquivo">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                     </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <span class="text-primary me-2">•</span>
+                        <span class="text-muted">
+                            Tamanho máximo: 5MB
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start">
+                        <span class="text-primary me-2">•</span>
+                        <span class="text-muted">
+                            Dimensões recomendadas: 1200x600px
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botões de Ação -->
+        <div class="d-flex gap-3 justify-content-end mt-4">
+            <button type="button" class="btn btn-secondary">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Cadastrar Evento</button>
+        </div>
+    </form>
+                
+            
+
+</main>
