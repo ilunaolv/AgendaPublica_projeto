@@ -7,15 +7,37 @@
     font-family: "Poppins", sans-serif;
 }
 
+:root {
+    --cor-principal: #018DCF;
+}
+
 /* ====== LAYOUT BASE GERAL ====== */
 
 h3.section-title {
     color: #018DCF !important;
 }
+
+/*BOTOES E FUNDO*/
+
+.bg-light {
+    border-radius: 1rem;
+}
+
+.btn-primary {
+    background-color: var(--cor-principal);
+    border: 1px solid var(--cor-principal);
+}
+
+    .btn-primary:hover {
+        background-color: #fff;
+        color: var(--cor-principal);
+        border: 1px solid var(--cor-principal);
+    }
+
 /* Conteúdo principal */
-#main-content {
-    margin-left: 70px; /* Largura do sidebar recolhido */
-    margin-top: 56px;
+/*#main-content {
+    margin-left: 70px;*/ /* Largura do sidebar recolhido */
+    /*margin-top: 56px;
     padding: 30px;
     min-height: calc(100vh - 56px);
     background-color: #fff;
@@ -23,8 +45,8 @@ h3.section-title {
 }
 
     #main-content.expanded {
-        margin-left: 250px; /* Largura do sidebar expandido */
-    }
+        margin-left: 250px;*/ /* Largura do sidebar expandido */
+    /*}*/
 
 /* Seções do formulário */
 .form-section {

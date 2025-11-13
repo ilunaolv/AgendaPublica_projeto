@@ -1,40 +1,89 @@
 ﻿<!-- Menu Lateral -->
-<nav id="sidebar" class="d-md-block bg-light sidebar">
-    <button class="sidebar-toggle" onclick="toggleSidebar()">
-        <i class="fas fa-chevron-right"></i>
+<!-- Ícones Bootstrap Icons (A ser incluído no <head> da sua página principal) -->
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"> -->
+<!-- Sidebar Adaptado (Use esta estrutura no seu <body>) -->
+<aside id="sidebar" class="sidebar-expanded bg-gray-800 text-white p-4 hidden md:block shadow-lg flex-shrink-0 relative">
+
+    <!-- Título da Aplicação -->
+    <h2 id="sidebar-title" class="text-2xl font-bold mb-8 text-indigo-400 whitespace-nowrap">EventFlow</h2>
+
+    <!-- Botão de Toggle -->
+    <button id="sidebar-toggle-btn"
+            class="sidebar-toggle-btn absolute top-4 -right-3 p-1 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg focus:outline-none z-10"
+            onclick="toggleSidebar()">
+        <i class="bi bi-chevron-left text-lg"></i>
     </button>
-    <div class="sidebar-sticky">
+
+    <nav>
         <ul class="nav flex-column">
-            <li class="nav-item">
-                <a class="nav-link active" href="#">
-                    <i class="fas fa-chart-bar"></i>
-                    <span class="menu-text">Dashboard</span>
+            <!-- Dashboard (Ativo) -->
+            <li class="mb-2">
+                <a href="#" class="flex items-center p-2 rounded-lg bg-indigo-600 hover:bg-indigo-700">
+                    <i class="bi bi-speedometer2 text-xl mr-3"></i>
+                    <span class="sidebar-menu-text whitespace-nowrap opacity-100">Dashboard</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-calendar-alt"></i>
-                    <span class="menu-text">Eventos</span>
+            <!-- Criar Eventos -->
+            <li class="mb-2">
+                <a href="#" class="flex items-center p-2 rounded-lg hover:bg-gray-700">
+                    <i class="bi bi-calendar-plus text-xl mr-3"></i>
+                    <span class="sidebar-menu-text whitespace-nowrap opacity-100">Criar Eventos</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-users"></i>
-                    <span class="menu-text">Participantes</span>
+            <!-- Gerar Relatórios -->
+            <li class="mb-2">
+                <a href="#" class="flex items-center p-2 rounded-lg hover:bg-gray-700">
+                    <i class="bi bi-file-earmark-text text-xl mr-3"></i>
+                    <span class="sidebar-menu-text whitespace-nowrap opacity-100">Gerar Relatórios</span>
                 </a>
             </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-file-alt"></i>
-                    <span class="menu-text">Relatórios</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#">
-                    <i class="fas fa-cog"></i>
-                    <span class="menu-text">Configurações</span>
+            <!-- Usuários -->
+            <li class="mb-2">
+                <a href="#" class="flex items-center p-2 rounded-lg hover:bg-gray-700">
+                    <i class="bi bi-people text-xl mr-3"></i>
+                    <span class="sidebar-menu-text whitespace-nowrap opacity-100">Usuários</span>
                 </a>
             </li>
         </ul>
-    </div>
-</nav>
+    </nav>
+</aside>
+
+<!-- Lógica do Sidebar (Inclua no seu <script> ou tag separada) -->
+<script>
+    // --- LÓGICA DO SIDEBAR (Colapsar/Expandir) ---
+    // Nota: Esta função é separada no código completo para ser integrada ao seu módulo principal.
+    let isSidebarExpanded = true;
+
+    window.toggleSidebar = function() {
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('main-content');
+        const menuTexts = document.querySelectorAll('.sidebar-menu-text');
+        const title = document.getElementById('sidebar-title');
+        const toggleBtnIcon = document.querySelector('#sidebar-toggle-btn i');
+
+        isSidebarExpanded = !isSidebarExpanded;
+
+        if (isSidebarExpanded) {
+            // Expandir
+            sidebar.classList.replace('sidebar-collapsed', 'sidebar-expanded');
+            mainContent.classList.replace('main-content-no-shift', 'main-content-shift');
+            title.style.opacity = 1;
+            toggleBtnIcon.classList.replace('bi-chevron-right', 'bi-chevron-left');
+            menuTexts.forEach(el => {
+                el.style.opacity = 1;
+                el.style.visibility = 'visible';
+            });
+        } else {
+            // Colapsar
+            sidebar.classList.replace('sidebar-expanded', 'sidebar-collapsed');
+            mainContent.classList.replace('main-content-shift', 'main-content-no-shift');
+            title.style.opacity = 0;
+            toggleBtnIcon.classList.replace('bi-chevron-left', 'bi-chevron-right');
+            menuTexts.forEach(el => {
+                el.style.opacity = 0;
+                el.style.visibility = 'hidden';
+            });
+        }
+    }
+    // --- FIM LÓGICA DO SIDEBAR ---
+</script>

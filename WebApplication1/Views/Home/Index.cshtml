@@ -1,7 +1,9 @@
-﻿ <!-- Conteúdo Principal -->
+﻿
 
 
 
+
+<!-- Conteúdo Principal -->
 
 <main id="main-content" class="col-md-10 ms-sm-auto col-lg-10 px-md-4 form-section">
 
@@ -12,14 +14,19 @@
         </button>
     </div>
 
-     <form>
+    <form>
 
         <!-- Banner do Evento -->
         <div class="form-section">
             <h3 class="section-title"> <i class="bi bi-images"></i> Banner do evento</h3>
 
+            <div id="bannerPreviewContainer" class="mb-3" style="display: none;">
+                <img id="bannerPreview" class="img-fluid rounded shadow" style="max-height: 250px; width: 100%; object-fit: cover;" alt="Preview do Banner">
+                <button id="removeBannerBtn" type="button" class="btn btn-sm btn-outline-danger mt-2">Remover Banner</button>
+            </div>
+
             <div class="upload-area mb-3">
-                <div class="mb-3">
+                <div id="uploadContent">
                     <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
                     <h5>Arraste e solte o banner aqui</h5>
                     <p class="text-muted">ou clique para selecionar o arquivo</p>
@@ -31,22 +38,6 @@
             </div>
 
             <div class="row">
-                <div class="col-md-6">
-                    <div class="d-flex align-items-start">
-                        <span class="text-primary me-2">•</span>
-                        <span class="text-muted">
-                            Tamanho máximo: 5MB
-                        </span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="d-flex align-items-start">
-                        <span class="text-primary me-2">•</span>
-                        <span class="text-muted">
-                            Dimensões recomendadas: 1200x600px
-                        </span>
-                    </div>
-                </div>
             </div>
         </div>
 
@@ -57,7 +48,7 @@
                 <div class="col mb-4">
                     <label class="form-label fw-bold">Nome do evento</label>
                     <input type="text" class="form-control" value="Maratona Praia Grande 2025 - Correndo pela Saúde e Solidariedade">
-                </div>    
+                </div>
             </div>
             <div class="row row-cols-1 row-cols-lg-2">
                 <div class="col mb-4">
@@ -110,7 +101,7 @@
                         <option>Workshop</option>
                     </select>
                 </div>
-           </div>
+            </div>
             <div class="row">
                 <div class="mb-3">
                     <label class="form-label fw-bold">Descrição</label>
@@ -121,9 +112,8 @@
                     O evento será acompanhado por equipes das secretarias de Saúde, Trânsito e Turismo, garantindo segurança e suporte aos participantes.
                     </textarea>
                 </div>
-           </div>   
+            </div>
         </div>
-
         <!-- Programação do evento -->
         <div class="form-section">
             <h3 class="section-title"><i class="bi bi-calendar-week"></i> Programação do evento</h3>
@@ -173,27 +163,21 @@
                     <label for="complemento" class="form-label fw-bold">Complemento</label>
                     <input type="text" id="complemento" class="form-control">
                 </div>
-              
+
             </div>
         </div>
-
-        <!-- Programação do evento -->
-        <div class="form-section">
+        <!-- Anexo de Documentos -->
+        <div class="form-section" id="document-upload-section">
             <h3 class="section-title"><i class="bi bi-arrow-bar-up"></i> Anexo de documentos</h3>
-           
-           
-            <div class="row">
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Upload</label>
-                    <div class="input-group">
-                        <input type="file" class="form-control" id="arquivo" accept=".pdf" aria-label="Selecione o arquivo PDF">
-                        <button class="btn btn-primary" type="button" title="Adicionar arquivo">
-                            <i class="bi bi-plus-lg"></i>
-                        </button>
-                        <button class="btn btn-danger" type="button" title="Remover arquivo">
-                            <i class="bi bi-x-lg"></i>
-                        </button>
-                     </div>
+
+            <div class="upload-list">
+                <div class="row upload-group mb-4">
+                    <div class="col">
+                        <label class="form-label fw-bold">Upload</label>
+                        <div class="input-group">
+                            <input type="file" class="form-control" name="arquivo[]" accept=".pdf" aria-label="Selecione o arquivo PDF">
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="row">
@@ -209,20 +193,249 @@
                     <div class="d-flex align-items-start">
                         <span class="text-primary me-2">•</span>
                         <span class="text-muted">
-                            Dimensões recomendadas: 1200x600px
+                            Formato permitido: PDF
                         </span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Botões de Ação -->
-        <div class="d-flex gap-3 justify-content-end mt-4">
-            <button type="button" class="btn btn-secondary">Cancelar</button>
+        <div class="d-flex gap-3 justify-content-end mb-4 p-3 border-bottom bg-light">
+            <button type="button" class="btn btn-outline-secondary">Cancelar</button>
             <button type="submit" class="btn btn-primary">Cadastrar Evento</button>
         </div>
     </form>
-                
-            
+
+
 
 </main>
+
+
+<!-- JS - AREA DE BANNER-->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fileInput = document.getElementById('bannerUpload');
+        const previewImage = document.getElementById('bannerPreview');
+        const previewContainer = document.getElementById('bannerPreviewContainer');
+        const uploadArea = document.querySelector('.upload-area');
+        const removeButton = document.getElementById('removeBannerBtn');
+
+        // --- 1. Lógica para Exibir o Preview ---
+        fileInput.addEventListener('change', function() {
+            const file = this.files[0];
+
+            if (file) {
+                // Cria um objeto FileReader para ler o arquivo
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    // Define a URL da imagem no elemento <img>
+                    previewImage.src = e.target.result;
+
+                    // Mostra o contêiner de preview e esconde a área de upload inicial
+                    previewContainer.style.display = 'block';
+                    uploadArea.style.display = 'none';
+                };
+
+                // Lê o arquivo como URL de dados (Data URL)
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // --- 2. Lógica para Remover o Preview ---
+        removeButton.addEventListener('click', function() {
+            // Limpa o valor do input (importante para o formulário)
+            fileInput.value = '';
+
+            // Oculta o contêiner de preview e reexibe a área de upload
+            previewContainer.style.display = 'none';
+            uploadArea.style.display = 'block';
+
+            // Remove a fonte da imagem para liberar memória
+            previewImage.src = '';
+        });
+    });
+</script>
+
+<!-- JS - AREA DE PROGRAMAÇÃO -->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Mapeamento dos elementos do DOM
+        const cepInput = document.getElementById('cep');
+        const btnBuscarCEP = document.getElementById('btnBuscarCEP');
+        const enderecoInput = document.getElementById('endereco');
+        const bairroSelect = document.getElementById('bairro');
+        const numeroInput = document.getElementById('numero');
+
+        // Função para limpar e desabilitar os campos de endereço
+        function limparCamposEndereco() {
+            enderecoInput.value = "";
+            bairroSelect.value = "Selecione o bairro"; // Ou define para o placeholder
+            // numeroInput.value = ""; // O número geralmente não é limpo
+
+            // Opcional: Desabilitar campos enquanto busca
+            // enderecoInput.disabled = true;
+            // bairroSelect.disabled = true;
+        }
+
+        // Função principal para buscar o CEP
+        async function buscarCEP() {
+            let cep = cepInput.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+
+            // Verifica se o CEP tem o tamanho correto (8 dígitos)
+            if (cep.length !== 8) {
+                if (cep.length > 0) {
+                    alert('CEP inválido! O CEP deve ter 8 dígitos.');
+                }
+                limparCamposEndereco();
+                return;
+            }
+
+            limparCamposEndereco();
+
+            // URL da API ViaCEP
+            const url = `https://viacep.com.br/ws/${cep}/json/`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+
+                if (data.erro) {
+                    alert('CEP não encontrado. Por favor, verifique o número digitado.');
+                } else {
+                    // Preenche o endereço
+                    enderecoInput.value = data.logradouro || '';
+
+                    // Preenche o bairro se ele existir nas opções do <select>
+                    preencherBairro(data.bairro);
+
+                    // Move o foco para o campo 'Número'
+                    numeroInput.focus();
+                }
+            } catch (error) {
+                console.error('Erro ao buscar o CEP:', error);
+                alert('Erro na comunicação com o serviço de busca de CEP.');
+            }
+        }
+
+        // Função para preencher o <select> do bairro
+        function preencherBairro(bairroEncontrado) {
+            const options = Array.from(bairroSelect.options);
+            let bairroExiste = false;
+
+            options.forEach(option => {
+                if (option.text.toLowerCase() === bairroEncontrado.toLowerCase()) {
+                    bairroSelect.value = option.value;
+                    bairroExiste = true;
+                }
+            });
+
+            // Se o bairro não estiver na sua lista de opções, pode ser exibido no console.
+            if (!bairroExiste && bairroEncontrado) {
+                console.warn(`Bairro "${bairroEncontrado}" encontrado, mas não está na sua lista de opções.`);
+                // Opcional: Você pode adicionar a opção dinamicamente se quiser
+                // const newOption = new Option(bairroEncontrado, bairroEncontrado, true, true);
+                // bairroSelect.appendChild(newOption);
+            }
+        }
+
+        // --- Event Listeners ---
+
+        // 1. Ao clicar no botão de busca
+        btnBuscarCEP.addEventListener('click', buscarCEP);
+
+        // 2. Ao sair do campo CEP (blur)
+        cepInput.addEventListener('blur', buscarCEP);
+
+        // Opcional: Formatação de máscara do CEP
+        cepInput.addEventListener('input', function(e) {
+            let value = e.target.value.replace(/\D/g, ''); // Remove não dígitos
+            if (value.length > 5) {
+                value = value.substring(0, 5) + '-' + value.substring(5, 8);
+            }
+            e.target.value = value;
+        });
+    });
+</script>
+
+<!-- JS - AREA DE ANEXO DE DOCUMENTOS-->
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const uploadSection = document.getElementById('document-upload-section');
+        const uploadList = uploadSection.querySelector('.upload-list');
+        const originalUploadGroup = uploadList.querySelector('.upload-group');
+
+        // Função para atualizar os botões em todos os campos
+        function updateControls() {
+            const allUploadGroups = uploadList.querySelectorAll('.upload-group');
+            const lastIndex = allUploadGroups.length - 1;
+
+            allUploadGroups.forEach((group, index) => {
+                const inputGroup = group.querySelector('.input-group');
+                // Remove todos os botões existentes antes de recolocar
+                inputGroup.querySelectorAll('button').forEach(btn => btn.remove());
+
+                // 1. Adiciona o botão de REMOVER em TODOS os campos
+                const removeButton = document.createElement('button');
+                removeButton.className = 'btn btn-danger';
+                removeButton.type = 'button';
+                removeButton.title = 'Remover arquivo';
+                removeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
+
+                // Adiciona o listener de remover
+                removeButton.addEventListener('click', function() {
+                    group.remove();
+                    // Se o campo removido era o único, chamamos a função para garantir que
+                    // a lista não fique completamente vazia, inserindo um campo novo e limpo.
+                    if (uploadList.querySelectorAll('.upload-group').length === 0) {
+                        addFileUploadField(false); // Adiciona um campo, mas não chama updateControls de novo
+                    }
+                    updateControls(); // Atualiza os controles nos campos restantes
+                });
+
+                // Anexa o botão de remover
+                inputGroup.appendChild(removeButton);
+
+                // 2. Adiciona o botão de ADICIONAR SOMENTE no ÚLTIMO campo
+                if (index === lastIndex) {
+                    const addButton = document.createElement('button');
+                    addButton.className = 'btn btn-primary';
+                    addButton.type = 'button';
+                    addButton.title = 'Adicionar arquivo';
+                    addButton.innerHTML = '<i class="bi bi-plus-lg"></i>';
+
+                    // Adiciona o listener para adicionar um novo campo
+                    addButton.addEventListener('click', addFileUploadField);
+
+                    // Anexa o botão de adicionar
+                    inputGroup.insertBefore(addButton, removeButton); // Insere ANTES do remover
+                }
+            });
+        }
+
+        // Função para adicionar um novo campo
+        function addFileUploadField() {
+            // Clona a estrutura do primeiro grupo (que está no DOM)
+            const newUploadGroup = originalUploadGroup.cloneNode(true);
+
+            // Limpa o input file clonado
+            const fileInput = newUploadGroup.querySelector('input[type="file"]');
+            fileInput.value = '';
+
+            // Insere o novo campo na lista
+            uploadList.appendChild(newUploadGroup);
+
+            // Atualiza os botões de controle de todos os campos
+            updateControls();
+        }
+
+        // --- Inicialização ---
+        // 1. O campo inicial deve ser removível.
+        // 2. O campo inicial deve ter o botão de adicionar.
+        updateControls();
+
+        // Caso a lista fique vazia (opcionalidade total), garantimos que um campo base seja sempre visível
+        // para dar o ponto de entrada ao usuário. Se o usuário deletar o único campo, o listener de remoção
+        // irá chamar addFileUploadField(false) para restaurar a UI com 1 campo vazio e configurado.
+    });
+</script>
