@@ -10,15 +10,6 @@
     overflow: hidden; /* Esconde texto que ultrapassa o limite */
 }
 
-.main-content-shift {
-    margin-left: 256px;
-    transition: margin-left 0.3s ease;
-}
-
-.main-content-no-shift {
-    margin-left: 64px;
-    transition: margin-left 0.3s ease;
-}
 /* Transição para texto e título */
 .sidebar-menu-text, #sidebar-title {
     transition: opacity 0.3s ease;

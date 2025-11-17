@@ -1,441 +1,343 @@
 ﻿
+<body class="min-h-screen">
+    <div id="app" class="flex">
 
+        <!-- Conteúdo Principal do Dashboard -->
+        <main class="flex-1 p-4 md:p-8">
+            <h1 class="text-4xl font-extrabold text-gray-800 mb-6">Visão Geral dos Eventos</h1>
 
+            <!-- Cards de Estatísticas (Metrics) -->
+            <div id="metrics-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+                <!-- Total de Eventos -->
+                <div class="stat-card bg-white p-6 rounded-xl shadow-md border-b-4 border-indigo-500">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500 font-medium">Total de Eventos</span>
+                        <i class="bi bi-calendar-check text-2xl text-indigo-500"></i>
+                    </div>
+                    <p id="totalEvents" class="text-4xl font-bold mt-2 text-gray-900">0</p>
+                </div>
+                <!-- Prioridade Alta -->
+                <div class="stat-card bg-white p-6 rounded-xl shadow-md border-b-4 border-red-500">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500 font-medium">Prioridade Alta</span>
+                        <i class="bi bi-fire text-2xl text-red-500"></i>
+                    </div>
+                    <p id="highPriority" class="text-4xl font-bold mt-2 text-gray-900">0</p>
+                </div>
+                <!-- Eventos Públicos -->
+                <div class="stat-card bg-white p-6 rounded-xl shadow-md border-b-4 border-green-500">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500 font-medium">Eventos Públicos</span>
+                        <i class="bi bi-globe text-2xl text-green-500"></i>
+                    </div>
+                    <p id="publicEvents" class="text-4xl font-bold mt-2 text-gray-900">0</p>
+                </div>
+                <!-- Próximo Evento (Placeholder) -->
+                <div class="stat-card bg-white p-6 rounded-xl shadow-md border-b-4 border-yellow-500">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-500 font-medium">Próximo Início</span>
+                        <i class="bi bi-clock text-2xl text-yellow-500"></i>
+                    </div>
+                    <p id="nextEventDate" class="text-xl font-bold mt-2 text-gray-900">Buscando...</p>
+                </div>
+            </div>
 
+            <!-- Tabela de Eventos Recentes -->
+            <div class="bg-white p-6 rounded-xl shadow-lg">
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <h2 class="text-2xl font-semibold text-gray-800">Lista de Eventos Cadastrados</h2>
+                    <a href="#" class="text-indigo-600 hover:text-indigo-800 flex items-center">
+                        Ver Todos <i class="bi bi-arrow-right ml-2"></i>
+                    </a>
+                </div>
 
-<!-- Conteúdo Principal -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nome do Evento</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Prioridade</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data Início</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Localização</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="eventsTableBody" class="bg-white divide-y divide-gray-200">
+                            <!-- Linhas de eventos serão inseridas aqui pelo JS -->
+                            <tr>
+                                <td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center">Carregando eventos...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-<main id="main-content" class="col-md-10 ms-sm-auto col-lg-10 px-md-4 form-section">
-
-    <div class="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom bg-light">
-        <h1 class="h3 mb-0 text-dark">Cadastrar Evento</h1>
-        <button type="button" class="btn btn-outline-primary">
-            <i class="bi bi-arrow-left me-2"></i>Voltar
-        </button>
+                <!-- Indicador de carregamento/erro -->
+                <div id="loadingIndicator" class="text-center py-4 hidden">
+                    <i class="bi bi-arrow-clockwise animate-spin text-indigo-500 text-3xl"></i>
+                    <p class="text-gray-500 mt-2">Buscando dados...</p>
+                </div>
+            </div>
+        </main>
     </div>
 
-    <form>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, query, onSnapshot, getDoc, doc, setDoc, updateDoc, deleteDoc, getDocs, orderBy, where, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        <!-- Banner do Evento -->
-        <div class="form-section">
-            <h3 class="section-title"> <i class="bi bi-images"></i> Banner do evento</h3>
+        // Variáveis globais (fornecidas pelo ambiente)
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-            <div id="bannerPreviewContainer" class="mb-3" style="display: none;">
-                <img id="bannerPreview" class="img-fluid rounded shadow" style="max-height: 250px; width: 100%; object-fit: cover;" alt="Preview do Banner">
-                <button id="removeBannerBtn" type="button" class="btn btn-sm btn-outline-danger mt-2">Remover Banner</button>
-            </div>
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
 
-            <div class="upload-area mb-3">
-                <div id="uploadContent">
-                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                    <h5>Arraste e solte o banner aqui</h5>
-                    <p class="text-muted">ou clique para selecionar o arquivo</p>
-                </div>
-                <input type="file" class="d-none" id="bannerUpload" accept="image/*">
-                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('bannerUpload').click()">
-                    Selecionar Arquivo
-                </button>
-            </div>
+        // Configurações do DOM
+        const totalEventsEl = document.getElementById('totalEvents');
+        const highPriorityEl = document.getElementById('highPriority');
+        const publicEventsEl = document.getElementById('publicEvents');
+        const nextEventDateEl = document.getElementById('nextEventDate');
+        const eventsTableBody = document.getElementById('eventsTableBody');
+        const loadingIndicator = document.getElementById('loadingIndicator');
 
-            <div class="row">
-            </div>
-        </div>
-
-        <!-- Informações Gerais -->
-        <div class="form-section">
-            <h3 class="section-title"> <i class="bi bi-pencil-square"></i> Informações gerais do evento</h3>
-            <div class="row">
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Nome do evento</label>
-                    <input type="text" class="form-control" value="Maratona Praia Grande 2025 - Correndo pela Saúde e Solidariedade">
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-
-                    <label class="form-label fw-bold">Nível de prioridade</label>
-                    <div class="d-flex gap-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="prioridade" id="normal">
-                            <label class="form-check-label" for="normal">Normal</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="prioridade" id="alta">
-                            <label class="form-check-label" for="alta">Alta</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="prioridade" id="inadiavel">
-                            <label class="form-check-label" for="inadiavel">Inadiável</label>
-                        </div>
-                    </div>
-
-                </div>
-                <div class="col mb-4">
-
-                    <label class="form-label fw-bold">Secretaria responsável</label>
-                    <select class="form-select">
-                        <option selected>Selecione...</option>
-                        <option>Secretaria de Planejamento (SEPLAN)</option>
-                        <option>Secretaria de Educação (SEDUC)</option>
-                    </select>
-
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Tipo de evento</label>
-                    <select class="form-select">
-                        <option selected>Selecione...</option>
-                        <option>Publico</option>
-                        <option>Privado</option>
-                    </select>
-                </div>
-
-
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Categoria</label>
-                    <select class="form-select">
-                        <option selected>Selecione...</option>
-                        <option>Evento cultural</option>
-                        <option>Palestra</option>
-                        <option>Workshop</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Descrição</label>
-                    <textarea class="form-control" rows="6">
-                    A Maratona Praia Grande 2025 é uma ação esportiva e solidária organizada pela Secretaria de Esportes e Laser, com o objetivo de incentivar práticas saudáveis e promover integração entre os munícipes.  
-                    Durante o percurso, haverá pontos de apoio, ambulância, hidratação e ações de conscientização sobre saúde e sustentabilidade.  
-
-                    O evento será acompanhado por equipes das secretarias de Saúde, Trânsito e Turismo, garantindo segurança e suporte aos participantes.
-                    </textarea>
-                </div>
-            </div>
-        </div>
-        <!-- Programação do evento -->
-        <div class="form-section">
-            <h3 class="section-title"><i class="bi bi-calendar-week"></i> Programação do evento</h3>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Data e Hora de Início</label>
-                    <input type="datetime-local" class="form-control" id="dataHoraInicio">
-                </div>
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Data e Hora de Término</label>
-                    <input type="datetime-local" class="form-control" id="dataHoraTermino">
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-                    <label for="cep" class="form-label fw-bold">CEP</label>
-                    <div class="input-group">
-                        <input type="text" id="cep" class="form-control" placeholder="Digite o CEP">
-                        <button class="btn btn-outline-primary" type="button" id="btnBuscarCEP" title="Buscar CEP">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="col mb-4">
-                    <label for="endereco" class="form-label fw-bold">Endereço</label>
-                    <input type="text" id="endereco" class="form-control" placeholder="Rua, avenida, etc.">
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-                    <label for="numero" class="form-label fw-bold">Nº</label>
-                    <input type="text" id="numero" class="form-control">
-                </div>
-                <div class="col mb-4">
-                    <label for="bairro" class="form-label fw-bold">Bairro</label>
-                    <select id="bairro" class="form-select">
-                        <option selected disabled>Selecione o bairro</option>
-                        <option>Boqueirão</option>
-                        <option>Aviação</option>
-                        <option>Caiçara</option>
-                        <option>Guilhermina</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-                    <label for="complemento" class="form-label fw-bold">Complemento</label>
-                    <input type="text" id="complemento" class="form-control">
-                </div>
-
-            </div>
-        </div>
-        <!-- Anexo de Documentos -->
-        <div class="form-section" id="document-upload-section">
-            <h3 class="section-title"><i class="bi bi-arrow-bar-up"></i> Anexo de documentos</h3>
-
-            <div class="upload-list">
-                <div class="row upload-group mb-4">
-                    <div class="col">
-                        <label class="form-label fw-bold">Upload</label>
-                        <div class="input-group">
-                            <input type="file" class="form-control" name="arquivo[]" accept=".pdf" aria-label="Selecione o arquivo PDF">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="d-flex align-items-start">
-                        <span class="text-primary me-2">•</span>
-                        <span class="text-muted">
-                            Tamanho máximo: 5MB
-                        </span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="d-flex align-items-start">
-                        <span class="text-primary me-2">•</span>
-                        <span class="text-muted">
-                            Formato permitido: PDF
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <div class="d-flex gap-3 justify-content-end mb-4 p-3 border-bottom bg-light">
-            <button type="button" class="btn btn-outline-secondary">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Cadastrar Evento</button>
-        </div>
-    </form>
-
-
-
-</main>
-
-
-<!-- JS - AREA DE BANNER-->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const fileInput = document.getElementById('bannerUpload');
-        const previewImage = document.getElementById('bannerPreview');
-        const previewContainer = document.getElementById('bannerPreviewContainer');
-        const uploadArea = document.querySelector('.upload-area');
-        const removeButton = document.getElementById('removeBannerBtn');
-
-        // --- 1. Lógica para Exibir o Preview ---
-        fileInput.addEventListener('change', function() {
-            const file = this.files[0];
-
-            if (file) {
-                // Cria um objeto FileReader para ler o arquivo
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    // Define a URL da imagem no elemento <img>
-                    previewImage.src = e.target.result;
-
-                    // Mostra o contêiner de preview e esconde a área de upload inicial
-                    previewContainer.style.display = 'block';
-                    uploadArea.style.display = 'none';
-                };
-
-                // Lê o arquivo como URL de dados (Data URL)
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // --- 2. Lógica para Remover o Preview ---
-        removeButton.addEventListener('click', function() {
-            // Limpa o valor do input (importante para o formulário)
-            fileInput.value = '';
-
-            // Oculta o contêiner de preview e reexibe a área de upload
-            previewContainer.style.display = 'none';
-            uploadArea.style.display = 'block';
-
-            // Remove a fonte da imagem para liberar memória
-            previewImage.src = '';
-        });
-    });
-</script>
-
-<!-- JS - AREA DE PROGRAMAÇÃO -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Mapeamento dos elementos do DOM
-        const cepInput = document.getElementById('cep');
-        const btnBuscarCEP = document.getElementById('btnBuscarCEP');
-        const enderecoInput = document.getElementById('endereco');
-        const bairroSelect = document.getElementById('bairro');
-        const numeroInput = document.getElementById('numero');
-
-        // Função para limpar e desabilitar os campos de endereço
-        function limparCamposEndereco() {
-            enderecoInput.value = "";
-            bairroSelect.value = "Selecione o bairro"; // Ou define para o placeholder
-            // numeroInput.value = ""; // O número geralmente não é limpo
-
-            // Opcional: Desabilitar campos enquanto busca
-            // enderecoInput.disabled = true;
-            // bairroSelect.disabled = true;
+        // Função utilitária para formatar data e hora
+        function formatDate(timestamp) {
+            if (!timestamp || !timestamp.toDate) return 'N/A';
+            const date = timestamp.toDate();
+            return date.toLocaleDateString('pt-BR', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
 
-        // Função principal para buscar o CEP
-        async function buscarCEP() {
-            let cep = cepInput.value.replace(/\D/g, ''); // Remove caracteres não numéricos
+        // Função para determinar a cor da prioridade
+        function getPriorityColor(priority) {
+            switch (priority ? priority.toLowerCase() : '') {
+                case 'alta':
+                    return 'bg-red-100 text-red-800';
+                case 'inadiável':
+                    return 'bg-purple-100 text-purple-800';
+                case 'normal':
+                default:
+                    return 'bg-blue-100 text-blue-800';
+            }
+        }
 
-            // Verifica se o CEP tem o tamanho correto (8 dígitos)
-            if (cep.length !== 8) {
-                if (cep.length > 0) {
-                    alert('CEP inválido! O CEP deve ter 8 dígitos.');
-                }
-                limparCamposEndereco();
+        // Função para renderizar a tabela
+        function renderEvents(events) {
+            eventsTableBody.innerHTML = '';
+
+            if (events.length === 0) {
+                eventsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center">Nenhum evento cadastrado.</td>
+                    </tr>
+                `;
                 return;
             }
 
-            limparCamposEndereco();
+            // Ordena os eventos pela data de início (em memória, evitando orderBy no Firestore)
+            events.sort((a, b) => (a.dataHoraInicio.seconds || 0) - (b.dataHoraInicio.seconds || 0));
 
-            // URL da API ViaCEP
-            const url = `https://viacep.com.br/ws/${cep}/json/`;
+            // Atualiza as métricas
+            totalEventsEl.textContent = events.length;
+            highPriorityEl.textContent = events.filter(e => e.prioridade && e.prioridade.toLowerCase() === 'alta').length;
+            publicEventsEl.textContent = events.filter(e => e.tipoEvento && e.tipoEvento.toLowerCase() === 'publico').length;
 
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
+            // Próximo evento (o primeiro após a ordenação)
+            nextEventDateEl.textContent = events[0] ? formatDate(events[0].dataHoraInicio) : 'N/A';
 
-                if (data.erro) {
-                    alert('CEP não encontrado. Por favor, verifique o número digitado.');
-                } else {
-                    // Preenche o endereço
-                    enderecoInput.value = data.logradouro || '';
+            // Renderiza as linhas da tabela
+            events.forEach(event => {
+                const priorityClass = getPriorityColor(event.prioridade);
 
-                    // Preenche o bairro se ele existir nas opções do <select>
-                    preencherBairro(data.bairro);
-
-                    // Move o foco para o campo 'Número'
-                    numeroInput.focus();
-                }
-            } catch (error) {
-                console.error('Erro ao buscar o CEP:', error);
-                alert('Erro na comunicação com o serviço de busca de CEP.');
-            }
-        }
-
-        // Função para preencher o <select> do bairro
-        function preencherBairro(bairroEncontrado) {
-            const options = Array.from(bairroSelect.options);
-            let bairroExiste = false;
-
-            options.forEach(option => {
-                if (option.text.toLowerCase() === bairroEncontrado.toLowerCase()) {
-                    bairroSelect.value = option.value;
-                    bairroExiste = true;
-                }
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50';
+                row.innerHTML = `
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900">${event.nomeEvento || 'Sem Nome'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${priorityClass}">
+                            ${event.prioridade || 'Normal'}
+                        </span>
+                    </td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${formatDate(event.dataHoraInicio)}</td>
+                    <td class="px-4 py-3 text-sm text-gray-500">${event.endereco || 'Local Não Informado'}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                        <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Detalhes"><i class="bi bi-eye"></i></a>
+                        <a href="#" class="text-red-600 hover:text-red-900" title="Excluir"><i class="bi bi-trash"></i></a>
+                    </td>
+                `;
+                eventsTableBody.appendChild(row);
             });
-
-            // Se o bairro não estiver na sua lista de opções, pode ser exibido no console.
-            if (!bairroExiste && bairroEncontrado) {
-                console.warn(`Bairro "${bairroEncontrado}" encontrado, mas não está na sua lista de opções.`);
-                // Opcional: Você pode adicionar a opção dinamicamente se quiser
-                // const newOption = new Option(bairroEncontrado, bairroEncontrado, true, true);
-                // bairroSelect.appendChild(newOption);
-            }
         }
 
-        // --- Event Listeners ---
+        // Função para escutar a coleção de eventos
+        function subscribeToEvents() {
+            if (!db || !userId) return;
 
-        // 1. Ao clicar no botão de busca
-        btnBuscarCEP.addEventListener('click', buscarCEP);
+            loadingIndicator.classList.remove('hidden');
 
-        // 2. Ao sair do campo CEP (blur)
-        cepInput.addEventListener('blur', buscarCEP);
+            // Caminho para a coleção pública (simulando eventos compartilhados/públicos)
+            // Usaremos a estrutura /artifacts/{appId}/public/data/events
+            const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
 
-        // Opcional: Formatação de máscara do CEP
-        cepInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, ''); // Remove não dígitos
-            if (value.length > 5) {
-                value = value.substring(0, 5) + '-' + value.substring(5, 8);
-            }
-            e.target.value = value;
-        });
-    });
-</script>
+            // Cria a query para buscar a coleção
+            // NOTA: 'orderBy' foi removido para evitar erros de índice, a ordenação é feita em memória.
+            const eventsQuery = query(eventsCollectionRef);
 
-<!-- JS - AREA DE ANEXO DE DOCUMENTOS-->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const uploadSection = document.getElementById('document-upload-section');
-        const uploadList = uploadSection.querySelector('.upload-list');
-        const originalUploadGroup = uploadList.querySelector('.upload-group');
+            // onSnapshot para escuta em tempo real
+            const unsubscribe = onSnapshot(eventsQuery, (snapshot) => {
+                loadingIndicator.classList.add('hidden');
 
-        // Função para atualizar os botões em todos os campos
-        function updateControls() {
-            const allUploadGroups = uploadList.querySelectorAll('.upload-group');
-            const lastIndex = allUploadGroups.length - 1;
-
-            allUploadGroups.forEach((group, index) => {
-                const inputGroup = group.querySelector('.input-group');
-                // Remove todos os botões existentes antes de recolocar
-                inputGroup.querySelectorAll('button').forEach(btn => btn.remove());
-
-                // 1. Adiciona o botão de REMOVER em TODOS os campos
-                const removeButton = document.createElement('button');
-                removeButton.className = 'btn btn-danger';
-                removeButton.type = 'button';
-                removeButton.title = 'Remover arquivo';
-                removeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
-
-                // Adiciona o listener de remover
-                removeButton.addEventListener('click', function() {
-                    group.remove();
-                    // Se o campo removido era o único, chamamos a função para garantir que
-                    // a lista não fique completamente vazia, inserindo um campo novo e limpo.
-                    if (uploadList.querySelectorAll('.upload-group').length === 0) {
-                        addFileUploadField(false); // Adiciona um campo, mas não chama updateControls de novo
-                    }
-                    updateControls(); // Atualiza os controles nos campos restantes
+                const events = [];
+                snapshot.forEach(doc => {
+                    events.push({ id: doc.id, ...doc.data() });
                 });
 
-                // Anexa o botão de remover
-                inputGroup.appendChild(removeButton);
+                renderEvents(events);
 
-                // 2. Adiciona o botão de ADICIONAR SOMENTE no ÚLTIMO campo
-                if (index === lastIndex) {
-                    const addButton = document.createElement('button');
-                    addButton.className = 'btn btn-primary';
-                    addButton.type = 'button';
-                    addButton.title = 'Adicionar arquivo';
-                    addButton.innerHTML = '<i class="bi bi-plus-lg"></i>';
-
-                    // Adiciona o listener para adicionar um novo campo
-                    addButton.addEventListener('click', addFileUploadField);
-
-                    // Anexa o botão de adicionar
-                    inputGroup.insertBefore(addButton, removeButton); // Insere ANTES do remover
-                }
+            }, (error) => {
+                console.error("Erro ao carregar eventos:", error);
+                loadingIndicator.classList.add('hidden');
+                eventsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="px-4 py-4 text-sm font-semibold text-red-600 text-center">
+                            Erro ao carregar dados. Verifique a conexão.
+                        </td>
+                    </tr>
+                `;
             });
+
+            // Retorna a função de unsubscribe para limpeza (boa prática)
+            return unsubscribe;
         }
 
-        // Função para adicionar um novo campo
-        function addFileUploadField() {
-            // Clona a estrutura do primeiro grupo (que está no DOM)
-            const newUploadGroup = originalUploadGroup.cloneNode(true);
+        // Função de autenticação (usando o token fornecido ou anonimamente)
+        async function initializeAuthAndFirestore() {
+            if (!firebaseConfig) {
+                console.error("Configuração do Firebase não encontrada.");
+                return;
+            }
 
-            // Limpa o input file clonado
-            const fileInput = newUploadGroup.querySelector('input[type="file"]');
-            fileInput.value = '';
+            try {
+                // 1. Inicializa o App e serviços
+                const app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
 
-            // Insere o novo campo na lista
-            uploadList.appendChild(newUploadGroup);
+                // Configura o log para debug
+                // setLogLevel('debug');
 
-            // Atualiza os botões de controle de todos os campos
-            updateControls();
+                // 2. Realiza a autenticação
+                await setPersistence(auth, browserLocalPersistence);
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // 3. Aguarda a mudança de estado de autenticação
+                onAuthStateChanged(auth, (user) => {
+                    if (user) {
+                        userId = user.uid;
+                        isAuthReady = true;
+                        console.log("Usuário autenticado:", userId);
+                        // Inicia a escuta dos dados APÓS a autenticação
+                        subscribeToEvents();
+                    } else {
+                        userId = crypto.randomUUID(); // ID temporário se a autenticação falhar
+                        isAuthReady = false;
+                        console.log("Autenticação anônima ou falha na autenticação. Usando ID temporário.");
+                        // Mesmo sem auth, tentamos carregar, mas pode falhar pelas regras de segurança
+                        subscribeToEvents();
+                    }
+                });
+
+            } catch (error) {
+                console.error("Erro na inicialização do Firebase ou Autenticação:", error);
+                isAuthReady = true; // Permite a renderização do erro
+            }
         }
 
-        // --- Inicialização ---
-        // 1. O campo inicial deve ser removível.
-        // 2. O campo inicial deve ter o botão de adicionar.
-        updateControls();
+        // 4. Inicia o processo
+        initializeAuthAndFirestore();
 
-        // Caso a lista fique vazia (opcionalidade total), garantimos que um campo base seja sempre visível
-        // para dar o ponto de entrada ao usuário. Se o usuário deletar o único campo, o listener de remoção
-        // irá chamar addFileUploadField(false) para restaurar a UI com 1 campo vazio e configurado.
-    });
-</script>
+        // SIMULANDO A CRIAÇÃO DE DADOS INICIAIS (PARA TESTE)
+        // Esta função deve ser chamada apenas uma vez para popular o banco de dados
+        async function createInitialData() {
+            // Espera a autenticação para garantir que o userId e db estejam prontos
+            await new Promise(resolve => onAuthStateChanged(auth, resolve));
+
+            const eventsData = [
+                {
+                    nomeEvento: "Maratona Praia Grande 2025",
+                    prioridade: "Alta",
+                    tipoEvento: "Publico",
+                    secretaria: "SEPLAN",
+                    categoria: "Evento cultural",
+                    dataHoraInicio: new Date('2025-05-20T08:00:00'),
+                    dataHoraTermino: new Date('2025-05-20T12:00:00'),
+                    endereco: "Av. Pres. Castelo Branco, 1000",
+                    cep: "11700-000"
+                },
+                {
+                    nomeEvento: "Workshop de Inovação Digital",
+                    prioridade: "Normal",
+                    tipoEvento: "Privado",
+                    secretaria: "SEDUC",
+                    categoria: "Workshop",
+                    dataHoraInicio: new Date('2025-06-15T14:30:00'),
+                    dataHoraTermino: new Date('2025-06-15T17:00:00'),
+                    endereco: "Rua do Saber, 50",
+                    cep: "11700-123"
+                },
+                {
+                    nomeEvento: "Reunião Anual - Gestão",
+                    prioridade: "Inadiável",
+                    tipoEvento: "Privado",
+                    secretaria: "SEPLAN",
+                    categoria: "Palestra",
+                    dataHoraInicio: new Date('2025-04-10T10:00:00'),
+                    dataHoraTermino: new Date('2025-04-10T11:00:00'),
+                    endereco: "Paço Municipal",
+                    cep: "11700-999"
+                }
+            ];
+
+            const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
+
+            // Verifica se a coleção já existe antes de popular para evitar duplicação
+            const querySnapshot = await getDocs(eventsCollectionRef);
+            if (querySnapshot.empty) {
+                console.log("Populando o Firestore com dados iniciais...");
+                for (const data of eventsData) {
+                    // Firestore não aceita Date nativo em setDoc, precisa ser convertido ou usado nativamente
+                    // Se for para setDoc, usa-se a forma abaixo (ou apenas passa o Date se usar addDoc)
+                    const firestoreData = {
+                        ...data,
+                        dataHoraInicio: data.dataHoraInicio,
+                        dataHoraTermino: data.dataHoraTermino,
+                        // Convertendo a data para o formato aceito pelo Firestore no setDoc
+                        // (o Firestore lida bem com objetos Date nativos)
+                    };
+                    await setDoc(doc(eventsCollectionRef), firestoreData);
+                }
+                console.log("Dados iniciais criados com sucesso.");
+            } else {
+                 console.log("Coleção 'events' já populada. Pulando criação de dados iniciais.");
+            }
+        }
+
+        // Descomente a linha abaixo se você quiser que os dados de exemplo sejam criados no seu Firestore
+        // createInitialData();
+
+    </script>
+</body>
+<script src="https://cdn.tailwindcss.com"></script>

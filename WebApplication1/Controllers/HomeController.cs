@@ -18,7 +18,12 @@ namespace WebApplication1.Controllers
             return View();
         }
 
-        public IActionResult Privacy()
+        public IActionResult criarEvento()
+        {
+            return View();
+        }
+
+        public IActionResult gerarRelatorio()
         {
             return View();
         }

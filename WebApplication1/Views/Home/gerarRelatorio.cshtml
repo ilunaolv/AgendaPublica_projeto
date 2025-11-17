@@ -1,0 +1,848 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatórios de Eventos</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        :root {
+            --primary-color: #0d6efd;
+            --secondary-color: #6c757d;
+            --success-color: #198754;
+            --warning-color: #ffc107;
+            --danger-color: #dc3545;
+            --info-color: #0dcaf0;
+        }
+
+        .dashboard-card {
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+        }
+
+            .dashboard-card:hover {
+                transform: translateY(-5px);
+            }
+
+        .card-icon {
+            font-size: 2rem;
+            opacity: 0.7;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        .report-section {
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .section-title {
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+            color: #333;
+        }
+
+        .filter-section {
+            background-color: #f8f9fa;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        .priority-badge {
+            font-size: 0.8rem;
+            padding: 0.3rem 0.6rem;
+        }
+
+        .event-table {
+            font-size: 0.9rem;
+        }
+
+            .event-table th {
+                background-color: #f8f9fa;
+            }
+    </style>
+</head>
+<body>
+    <!-- Conteúdo Principal -->
+    <main class="col-md-10 mx-auto col-lg-10 px-md-4">
+        <div class="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom bg-light">
+            <h1 class="h3 mb-0 text-dark">
+                <i class="bi bi-graph-up me-2"></i>Relatórios de Eventos
+            </h1>
+            <button type="button" class="btn btn-outline-primary" onclick="window.history.back()">
+                <i class="bi bi-arrow-left me-2"></i>Voltar
+            </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="filter-section mb-4">
+            <h5 class="mb-3">Filtros</h5>
+            <div class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Período</label>
+                    <select class="form-select" id="periodFilter">
+                        <option value="all">Todos os períodos</option>
+                        <option value="today">Hoje</option>
+                        <option value="week">Esta semana</option>
+                        <option value="month">Este mês</option>
+                        <option value="quarter">Este trimestre</option>
+                        <option value="year">Este ano</option>
+                        <option value="custom">Personalizado</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Secretaria</label>
+                    <select class="form-select" id="secretaryFilter">
+                        <option value="all">Todas as secretarias</option>
+                        <option value="SEPLAN">Secretaria de Planejamento (SEPLAN)</option>
+                        <option value="SEDUC">Secretaria de Educação (SEDUC)</option>
+                        <option value="SESPORT">Secretaria de Esportes</option>
+                        <option value="SESAU">Secretaria de Saúde</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Categoria</label>
+                    <select class="form-select" id="categoryFilter">
+                        <option value="all">Todas as categorias</option>
+                        <option value="cultural">Evento cultural</option>
+                        <option value="lecture">Palestra</option>
+                        <option value="workshop">Workshop</option>
+                        <option value="sports">Evento esportivo</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Prioridade</label>
+                    <select class="form-select" id="priorityFilter">
+                        <option value="all">Todas as prioridades</option>
+                        <option value="normal">Normal</option>
+                        <option value="alta">Alta</option>
+                        <option value="inadiavel">Inadiável</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row mt-3" id="customDateRange" style="display: none;">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Data inicial</label>
+                    <input type="date" class="form-control" id="startDate">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Data final</label>
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+            </div>
+            <div class="mt-3">
+                <button class="btn btn-primary" id="applyFilters">
+                    <i class="bi bi-funnel me-1"></i>Aplicar Filtros
+                </button>
+                <button class="btn btn-outline-secondary ms-2" id="resetFilters">
+                    <i class="bi bi-arrow-clockwise me-1"></i>Limpar Filtros
+                </button>
+                <button class="btn btn-success ms-2" id="exportReport">
+                    <i class="bi bi-file-earmark-spreadsheet me-1"></i>Exportar Relatório
+                </button>
+            </div>
+        </div>
+
+        <!-- Dashboard de Estatísticas -->
+        <div class="report-section">
+            <h3 class="section-title">
+                <i class="bi bi-speedometer2 me-2"></i>Dashboard de Estatísticas
+            </h3>
+
+            <div class="row g-4 mb-4">
+                <div class="col-md-3">
+                    <div class="card dashboard-card h-100 border-primary">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title text-primary">Total de Eventos</h5>
+                                    <h2 class="text-primary" id="totalEvents">0</h2>
+                                    <p class="card-text text-muted">Eventos cadastrados</p>
+                                </div>
+                                <div class="card-icon text-primary">
+                                    <i class="bi bi-calendar-event"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card dashboard-card h-100 border-success">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title text-success">Eventos Ativos</h5>
+                                    <h2 class="text-success" id="activeEvents">0</h2>
+                                    <p class="card-text text-muted">Eventos em andamento</p>
+                                </div>
+                                <div class="card-icon text-success">
+                                    <i class="bi bi-play-circle"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card dashboard-card h-100 border-warning">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title text-warning">Eventos de Alta Prioridade</h5>
+                                    <h2 class="text-warning" id="highPriorityEvents">0</h2>
+                                    <p class="card-text text-muted">Prioridade alta/inadiável</p>
+                                </div>
+                                <div class="card-icon text-warning">
+                                    <i class="bi bi-exclamation-triangle"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <div class="card dashboard-card h-100 border-info">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title text-info">Secretarias Envolvidas</h5>
+                                    <h2 class="text-info" id="involvedSecretaries">0</h2>
+                                    <p class="card-text text-muted">Secretarias com eventos</p>
+                                </div>
+                                <div class="card-icon text-info">
+                                    <i class="bi bi-building"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card dashboard-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Eventos por Categoria</h5>
+                            <div class="chart-container">
+                                <canvas id="categoryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card dashboard-card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">Eventos por Secretaria</h5>
+                            <div class="chart-container">
+                                <canvas id="secretaryChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gráficos de Tendência -->
+        <div class="report-section">
+            <h3 class="section-title">
+                <i class="bi bi-graph-up me-2"></i>Tendência de Eventos ao Longo do Tempo
+            </h3>
+
+            <div class="card dashboard-card">
+                <div class="card-body">
+                    <div class="chart-container" style="height: 400px;">
+                        <canvas id="trendChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabela de Eventos -->
+        <div class="report-section">
+            <h3 class="section-title">
+                <i class="bi bi-table me-2"></i>Lista de Eventos
+            </h3>
+
+            <div class="table-responsive">
+                <table class="table table-hover event-table">
+                    <thead>
+                        <tr>
+                            <th>Nome do Evento</th>
+                            <th>Data</th>
+                            <th>Categoria</th>
+                            <th>Secretaria</th>
+                            <th>Prioridade</th>
+                            <th>Status</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventsTableBody">
+                        <!-- Os dados serão preenchidos via JavaScript -->
+                    </tbody>
+                </table>
+            </div>
+
+            <nav aria-label="Navegação de páginas">
+                <ul class="pagination justify-content-center" id="pagination">
+                    <!-- A paginação será gerada via JavaScript -->
+                </ul>
+            </nav>
+        </div>
+    </main>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Dados mockados para os relatórios
+        const mockEvents = [
+            {
+                id: 1,
+                name: "Maratona Praia Grande 2025 - Correndo pela Saúde e Solidariedade",
+                startDate: "2025-03-15T08:00:00",
+                endDate: "2025-03-15T17:00:00",
+                category: "sports",
+                secretary: "SESPORT",
+                priority: "alta",
+                status: "ativo",
+                description: "A Maratona Praia Grande 2025 é uma ação esportiva e solidária organizada pela Secretaria de Esportes e Laser, com o objetivo de incentivar práticas saudáveis e promover integração entre os munícipes."
+            },
+            {
+                id: 2,
+                name: "Workshop de Educação Ambiental",
+                startDate: "2025-02-10T14:00:00",
+                endDate: "2025-02-10T17:00:00",
+                category: "workshop",
+                secretary: "SEDUC",
+                priority: "normal",
+                status: "concluido",
+                description: "Workshop sobre práticas sustentáveis e educação ambiental para professores da rede municipal."
+            },
+            {
+                id: 3,
+                name: "Festival de Música da Cidade",
+                startDate: "2025-04-20T18:00:00",
+                endDate: "2025-04-22T23:00:00",
+                category: "cultural",
+                secretary: "SEPLAN",
+                priority: "normal",
+                status: "ativo",
+                description: "Festival com apresentações de bandas locais e regionais no centro da cidade."
+            },
+            {
+                id: 4,
+                name: "Campanha de Vacinação contra Influenza",
+                startDate: "2025-05-05T08:00:00",
+                endDate: "2025-05-10T17:00:00",
+                category: "lecture",
+                secretary: "SESAU",
+                priority: "inadiavel",
+                status: "ativo",
+                description: "Campanha de vacinação contra influenza para grupos de risco."
+            },
+            {
+                id: 5,
+                name: "Feira de Empreendedorismo",
+                startDate: "2025-06-12T09:00:00",
+                endDate: "2025-06-14T18:00:00",
+                category: "workshop",
+                secretary: "SEPLAN",
+                priority: "alta",
+                status: "planejamento",
+                description: "Feira para promover pequenos empreendedores locais e oferecer workshops sobre gestão de negócios."
+            },
+            {
+                id: 6,
+                name: "Olimpíadas Estudantis",
+                startDate: "2025-08-20T08:00:00",
+                endDate: "2025-08-25T18:00:00",
+                category: "sports",
+                secretary: "SEDUC",
+                priority: "normal",
+                status: "planejamento",
+                description: "Competições esportivas entre escolas municipais."
+            },
+            {
+                id: 7,
+                name: "Semana da Saúde Mental",
+                startDate: "2025-09-10T09:00:00",
+                endDate: "2025-09-15T17:00:00",
+                category: "lecture",
+                secretary: "SESAU",
+                priority: "alta",
+                status: "ativo",
+                description: "Palestras e workshops sobre saúde mental e bem-estar."
+            },
+            {
+                id: 8,
+                name: "Festival de Teatro Amador",
+                startDate: "2025-10-05T19:00:00",
+                endDate: "2025-10-08T22:00:00",
+                category: "cultural",
+                secretary: "SEPLAN",
+                priority: "normal",
+                status: "planejamento",
+                description: "Festival com apresentações de grupos de teatro amador da região."
+            }
+        ];
+
+        // Função para formatar a data
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR');
+        }
+
+        // Função para obter o texto da prioridade
+        function getPriorityText(priority) {
+            const priorities = {
+                'normal': 'Normal',
+                'alta': 'Alta',
+                'inadiavel': 'Inadiável'
+            };
+            return priorities[priority] || priority;
+        }
+
+        // Função para obter a classe Bootstrap da prioridade
+        function getPriorityClass(priority) {
+            const classes = {
+                'normal': 'bg-secondary',
+                'alta': 'bg-warning text-dark',
+                'inadiavel': 'bg-danger'
+            };
+            return classes[priority] || 'bg-secondary';
+        }
+
+        // Função para obter o texto do status
+        function getStatusText(status) {
+            const statuses = {
+                'ativo': 'Ativo',
+                'concluido': 'Concluído',
+                'planejamento': 'Em Planejamento'
+            };
+            return statuses[status] || status;
+        }
+
+        // Função para obter a classe Bootstrap do status
+        function getStatusClass(status) {
+            const classes = {
+                'ativo': 'bg-success',
+                'concluido': 'bg-secondary',
+                'planejamento': 'bg-info'
+            };
+            return classes[status] || 'bg-secondary';
+        }
+
+        // Função para filtrar eventos com base nos filtros selecionados
+        function filterEvents() {
+            const periodFilter = document.getElementById('periodFilter').value;
+            const secretaryFilter = document.getElementById('secretaryFilter').value;
+            const categoryFilter = document.getElementById('categoryFilter').value;
+            const priorityFilter = document.getElementById('priorityFilter').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+
+            let filteredEvents = [...mockEvents];
+
+            // Filtrar por período
+            if (periodFilter !== 'all') {
+                const now = new Date();
+                filteredEvents = filteredEvents.filter(event => {
+                    const eventDate = new Date(event.startDate);
+
+                    switch(periodFilter) {
+                        case 'today':
+                            return eventDate.toDateString() === now.toDateString();
+                        case 'week':
+                            const startOfWeek = new Date(now);
+                            startOfWeek.setDate(now.getDate() - now.getDay());
+                            startOfWeek.setHours(0, 0, 0, 0);
+                            return eventDate >= startOfWeek;
+                        case 'month':
+                            return eventDate.getMonth() === now.getMonth() &&
+                                   eventDate.getFullYear() === now.getFullYear();
+                        case 'quarter':
+                            const currentQuarter = Math.floor(now.getMonth() / 3);
+                            const eventQuarter = Math.floor(eventDate.getMonth() / 3);
+                            return eventQuarter === currentQuarter &&
+                                   eventDate.getFullYear() === now.getFullYear();
+                        case 'year':
+                            return eventDate.getFullYear() === now.getFullYear();
+                        case 'custom':
+                            if (startDate && endDate) {
+                                const customStart = new Date(startDate);
+                                const customEnd = new Date(endDate);
+                                customEnd.setHours(23, 59, 59, 999);
+                                return eventDate >= customStart && eventDate <= customEnd;
+                            }
+                            return true;
+                        default:
+                            return true;
+                    }
+                });
+            }
+
+            // Filtrar por secretaria
+            if (secretaryFilter !== 'all') {
+                filteredEvents = filteredEvents.filter(event => event.secretary === secretaryFilter);
+            }
+
+            // Filtrar por categoria
+            if (categoryFilter !== 'all') {
+                filteredEvents = filteredEvents.filter(event => event.category === categoryFilter);
+            }
+
+            // Filtrar por prioridade
+            if (priorityFilter !== 'all') {
+                filteredEvents = filteredEvents.filter(event => event.priority === priorityFilter);
+            }
+
+            return filteredEvents;
+        }
+
+        // Função para atualizar o dashboard
+        function updateDashboard(events) {
+            // Atualizar estatísticas
+            document.getElementById('totalEvents').textContent = events.length;
+
+            const activeEvents = events.filter(event => event.status === 'ativo').length;
+            document.getElementById('activeEvents').textContent = activeEvents;
+
+            const highPriorityEvents = events.filter(event =>
+                event.priority === 'alta' || event.priority === 'inadiavel').length;
+            document.getElementById('highPriorityEvents').textContent = highPriorityEvents;
+
+            const involvedSecretaries = new Set(events.map(event => event.secretary)).size;
+            document.getElementById('involvedSecretaries').textContent = involvedSecretaries;
+
+            // Atualizar gráfico de categorias
+            updateCategoryChart(events);
+
+            // Atualizar gráfico de secretarias
+            updateSecretaryChart(events);
+
+            // Atualizar gráfico de tendência
+            updateTrendChart(events);
+
+            // Atualizar tabela de eventos
+            updateEventsTable(events);
+        }
+
+        // Função para atualizar o gráfico de categorias
+        function updateCategoryChart(events) {
+            const categories = {
+                'cultural': 0,
+                'lecture': 0,
+                'workshop': 0,
+                'sports': 0
+            };
+
+            events.forEach(event => {
+                if (categories.hasOwnProperty(event.category)) {
+                    categories[event.category]++;
+                }
+            });
+
+            const ctx = document.getElementById('categoryChart').getContext('2d');
+
+            // Destruir gráfico anterior se existir
+            if (window.categoryChartInstance) {
+                window.categoryChartInstance.destroy();
+            }
+
+            window.categoryChartInstance = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Evento Cultural', 'Palestra', 'Workshop', 'Evento Esportivo'],
+                    datasets: [{
+                        data: [
+                            categories.cultural,
+                            categories.lecture,
+                            categories.workshop,
+                            categories.sports
+                        ],
+                        backgroundColor: [
+                            '#FF6384',
+                            '#36A2EB',
+                            '#FFCE56',
+                            '#4BC0C0'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Função para atualizar o gráfico de secretarias
+        function updateSecretaryChart(events) {
+            const secretaries = {
+                'SEPLAN': 0,
+                'SEDUC': 0,
+                'SESPORT': 0,
+                'SESAU': 0
+            };
+
+            events.forEach(event => {
+                if (secretaries.hasOwnProperty(event.secretary)) {
+                    secretaries[event.secretary]++;
+                }
+            });
+
+            const ctx = document.getElementById('secretaryChart').getContext('2d');
+
+            // Destruir gráfico anterior se existir
+            if (window.secretaryChartInstance) {
+                window.secretaryChartInstance.destroy();
+            }
+
+            window.secretaryChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['SEPLAN', 'SEDUC', 'SESPORT', 'SESAU'],
+                    datasets: [{
+                        label: 'Número de Eventos',
+                        data: [
+                            secretaries.SEPLAN,
+                            secretaries.SEDUC,
+                            secretaries.SESPORT,
+                            secretaries.SESAU
+                        ],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.7)',
+                            'rgba(75, 192, 192, 0.7)',
+                            'rgba(255, 159, 64, 0.7)',
+                            'rgba(153, 102, 255, 0.7)'
+                        ],
+                        borderColor: [
+                            'rgb(54, 162, 235)',
+                            'rgb(75, 192, 192)',
+                            'rgb(255, 159, 64)',
+                            'rgb(153, 102, 255)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Função para atualizar o gráfico de tendência
+        function updateTrendChart(events) {
+            // Agrupar eventos por mês
+            const monthlyData = {};
+
+            events.forEach(event => {
+                const date = new Date(event.startDate);
+                const monthYear = `${date.getMonth() + 1}/${date.getFullYear()}`;
+
+                if (!monthlyData[monthYear]) {
+                    monthlyData[monthYear] = 0;
+                }
+
+                monthlyData[monthYear]++;
+            });
+
+            // Ordenar por data
+            const sortedMonths = Object.keys(monthlyData).sort((a, b) => {
+                const [monthA, yearA] = a.split('/').map(Number);
+                const [monthB, yearB] = b.split('/').map(Number);
+
+                if (yearA !== yearB) {
+                    return yearA - yearB;
+                }
+
+                return monthA - monthB;
+            });
+
+            const labels = sortedMonths;
+            const data = sortedMonths.map(month => monthlyData[month]);
+
+            const ctx = document.getElementById('trendChart').getContext('2d');
+
+            // Destruir gráfico anterior se existir
+            if (window.trendChartInstance) {
+                window.trendChartInstance.destroy();
+            }
+
+            window.trendChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Número de Eventos',
+                        data: data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Função para atualizar a tabela de eventos
+        function updateEventsTable(events) {
+            const tableBody = document.getElementById('eventsTableBody');
+            tableBody.innerHTML = '';
+
+            if (events.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-4">
+                            <i class="bi bi-inbox display-4 text-muted d-block mb-2"></i>
+                            <span class="text-muted">Nenhum evento encontrado com os filtros aplicados</span>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            events.forEach(event => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+                    <td>${event.name}</td>
+                    <td>${formatDate(event.startDate)}</td>
+                    <td>${getCategoryText(event.category)}</td>
+                    <td>${getSecretaryText(event.secretary)}</td>
+                    <td>
+                        <span class="badge priority-badge ${getPriorityClass(event.priority)}">
+                            ${getPriorityText(event.priority)}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge ${getStatusClass(event.status)}">
+                            ${getStatusText(event.status)}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary" title="Ver detalhes">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-secondary ms-1" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Função auxiliar para obter o texto da categoria
+        function getCategoryText(category) {
+            const categories = {
+                'cultural': 'Evento Cultural',
+                'lecture': 'Palestra',
+                'workshop': 'Workshop',
+                'sports': 'Evento Esportivo'
+            };
+            return categories[category] || category;
+        }
+
+        // Função auxiliar para obter o texto da secretaria
+        function getSecretaryText(secretary) {
+            const secretaries = {
+                'SEPLAN': 'Secretaria de Planejamento (SEPLAN)',
+                'SEDUC': 'Secretaria de Educação (SEDUC)',
+                'SESPORT': 'Secretaria de Esportes',
+                'SESAU': 'Secretaria de Saúde'
+            };
+            return secretaries[secretary] || secretary;
+        }
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar/ocultar datas personalizadas
+            document.getElementById('periodFilter').addEventListener('change', function() {
+                const customDateRange = document.getElementById('customDateRange');
+                if (this.value === 'custom') {
+                    customDateRange.style.display = 'block';
+                } else {
+                    customDateRange.style.display = 'none';
+                }
+            });
+
+            // Aplicar filtros
+            document.getElementById('applyFilters').addEventListener('click', function() {
+                const filteredEvents = filterEvents();
+                updateDashboard(filteredEvents);
+            });
+
+            // Limpar filtros
+            document.getElementById('resetFilters').addEventListener('click', function() {
+                document.getElementById('periodFilter').value = 'all';
+                document.getElementById('secretaryFilter').value = 'all';
+                document.getElementById('categoryFilter').value = 'all';
+                document.getElementById('priorityFilter').value = 'all';
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
+                document.getElementById('customDateRange').style.display = 'none';
+
+                updateDashboard(mockEvents);
+            });
+
+            // Exportar relatório
+            document.getElementById('exportReport').addEventListener('click', function() {
+                alert('Funcionalidade de exportação seria implementada aqui!');
+                // Em uma implementação real, isso geraria um arquivo CSV, PDF ou Excel
+            });
+
+            // Inicializar o dashboard com todos os eventos
+            updateDashboard(mockEvents);
+        });
+    </script>
+</body>
+</html>

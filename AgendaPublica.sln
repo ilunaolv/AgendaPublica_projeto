@@ -5,6 +5,10 @@ VisualStudioVersion = 17.14.36301.6
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendaPublica", "WebApplication1\AgendaPublica.csproj", "{CDEE368B-D749-464F-BBB7-B65804382249}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "AgendaPublicaPG", "AgendaPublicaPG", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AgendaPublica.Domain", "AgendaPublica.Domain\AgendaPublica.Domain.csproj", "{32749AB6-7727-4531-AF51-145DD91D19D0}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,9 +19,16 @@ Global
 		{CDEE368B-D749-464F-BBB7-B65804382249}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CDEE368B-D749-464F-BBB7-B65804382249}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CDEE368B-D749-464F-BBB7-B65804382249}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32749AB6-7727-4531-AF51-145DD91D19D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32749AB6-7727-4531-AF51-145DD91D19D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32749AB6-7727-4531-AF51-145DD91D19D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32749AB6-7727-4531-AF51-145DD91D19D0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{32749AB6-7727-4531-AF51-145DD91D19D0} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {571F1F35-43FB-4E18-ABD8-27101F8FF2B8}

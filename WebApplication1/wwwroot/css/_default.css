@@ -1,4 +1,3 @@
-
 /* ====== RESET ====== */
 * {
     margin: 0;
@@ -11,6 +10,51 @@
     --cor-principal: #018DCF;
 }
 
+
+/* Configuração Flexbox para o Body */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex; /* Habilita o Flexbox */
+    flex-direction: column; /* Organiza elementos verticalmente */
+}
+
+/* O contêiner que inclui a Sidebar e o Conteúdo precisa crescer */
+/* Assumindo que este é o div principal após o body que contém a sidebar e o main */
+.content-wrapper {
+    display: flex; /* Garante que sidebar e main fiquem lado a lado */
+    flex-grow: 1; /* FAZ ESTE CONTÊINER OCUPAR TODO O ESPAÇO NO BODY, EMPURRANDO O FOOTER */
+    min-height: 0; /* Correção para flex-grow em alguns cenários */
+}
+
+/* Garante que o conteúdo principal use o espaço restante horizontalmente */
+main {
+    flex-grow: 1;
+}
+
+/* ____________________________________________________________PAGINA DE DASHBOARD: INDEX*/
+.stat-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+
+
+/* Estilo do Footer */
+.footer {
+    /* Sem position: relative/fixed, apenas no fluxo normal */
+    background-color: var(--cor-principal);
+    width: 100%;
+    flex-shrink: 0; /* Impede que o footer encolha */
+    /* ... outros estilos ... */
+}
 /* ====== LAYOUT BASE GERAL ====== */
 
 h3.section-title {
@@ -34,25 +78,22 @@ h3.section-title {
         border: 1px solid var(--cor-principal);
     }
 
-/* Conteúdo principal */
-/*#main-content {
-    margin-left: 70px;*/ /* Largura do sidebar recolhido */
-    /*margin-top: 56px;
-    padding: 30px;
-    min-height: calc(100vh - 56px);
-    background-color: #fff;
-    transition: margin-left 0.3s ease;
-}
 
-    #main-content.expanded {
-        margin-left: 250px;*/ /* Largura do sidebar expandido */
-    /*}*/
+
+/* Estiliza o menu lateral para ter uma altura fixa e ficar ao lado do conteúdo */
+#sidebar-menu {
+    height: 100vh; /* Ocupa a altura da viewport */
+    position: sticky; /* Mantém a sidebar visível ao rolar o conteúdo principal */
+    top: 0;
+    overflow-y: auto; /* Adiciona barra de rolagem se o conteúdo do menu for muito grande */
+    flex-shrink: 0; /* Impede que a sidebar encolha se o conteúdo for muito longo */
+}
 
 /* Seções do formulário */
 .form-section {
     background: #fff;
     border-radius: 8px;
-    padding: 25px;
+    padding: 15px;
     margin-bottom: 25px;
     border: 1px solid #dee2e6;
 }
@@ -82,31 +123,21 @@ h3.section-title {
         background-color: #fff;
     }
 
-/* Footer */
-.footer {
-    background-color: #f8f9fa;
-    border-top: 1px solid #dee2e6;
-    padding: 20px 0;
-    margin-top: 50px;
-}
 
 /* Responsividade */
 @media (max-width: 768px) {
-    #sidebar {
+    /* Mudei de #sidebar para o ID correto #sidebar-menu */
+    #sidebar-menu {
         position: static;
         width: 100% !important;
         height: auto;
         border-radius: 0;
     }
 
-    #main-content {
-        margin-left: 0 !important;
-        margin-top: 0;
-        padding: 20px;
-    }
-
-    .sidebar-toggle {
-        display: none;
+    /* Em telas pequenas, queremos que o contêiner principal seja vertical (column) */
+    .d-flex {
+        flex-direction: column;
+        height: auto; /* Permite rolar verticalmente */
     }
 }
 /*BOTAO: VOLTAR / SELECIONAR ARQUIVO /___________________________________*/
@@ -114,39 +145,30 @@ h3.section-title {
 .btn.btn-outline-primary {
     color: #018DCF;
     border: 1px solid #018DCF;
-
-   
 }
+
     .btn.btn-outline-primary:hover {
         background-color: #018DCF;
         color: #fff;
     }
 
-
-
-
-
-
-
+/* Configurações de tipografia e layout */
 html {
     font-size: 14px;
+    position: relative;
+    min-height: 100%;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px; /* Espaço para o rodapé */
 }

@@ -31,6 +31,16 @@ header {
 
         }
 
+/* Footer */
+.footer {
+    background-color: var(--cor-principal);
+    color: #fff;
+    padding: 20px 0;
+    width: 100%;
+    /* Esta linha garante que o footer não encolha e fique no final */
+    flex-shrink: 0;
+}
+
 /* ====== HEADER PRINCIPAL ====== */
 .header-principal {
     display: flex;
