@@ -1,18 +1,15 @@
-﻿<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatórios de Eventos</title>
-
-    <!-- Bootstrap CSS -->
+﻿    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-
     <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS para exportação Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <!-- jsPDF para exportação PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <!-- html2canvas para capturar elementos HTML -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <style>
         :root {
@@ -22,12 +19,54 @@
             --warning-color: #ffc107;
             --danger-color: #dc3545;
             --info-color: #0dcaf0;
+            --prefeitura-blue: #1e3a8a;
+            --prefeitura-light: #3b82f6;
+        }
+
+
+        .header-prefeitura {
+            background: linear-gradient(135deg, var(--prefeitura-blue), var(--prefeitura-light));
+            color: white;
+            padding: 1rem 0;
+            border-bottom: 4px solid #f1c40f;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo {
+            width: 60px;
+            height: 60px;
+            background-color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: var(--prefeitura-blue);
+            border: 2px solid #f1c40f;
+        }
+
+        .municipio-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .municipio-subtitle {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin: 0;
         }
 
         .dashboard-card {
             border-radius: 10px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease;
+            border: none;
         }
 
             .dashboard-card:hover {
@@ -65,6 +104,7 @@
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1.5rem;
+            border-left: 4px solid var(--prefeitura-blue);
         }
 
         .priority-badge {
@@ -79,12 +119,80 @@
             .event-table th {
                 background-color: #f8f9fa;
             }
+
+        .export-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-pdf {
+            background-color: #e74c3c;
+            border-color: #e74c3c;
+            color: white;
+        }
+
+            .btn-pdf:hover {
+                background-color: #c0392b;
+                border-color: #c0392b;
+                color: white;
+            }
+
+        .btn-excel {
+            background-color: #27ae60;
+            border-color: #27ae60;
+            color: white;
+        }
+
+            .btn-excel:hover {
+                background-color: #219653;
+                border-color: #219653;
+                color: white;
+            }
+
+        .footer-prefeitura {
+            background-color: var(--prefeitura-blue);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+
+       
+
+        .export-buttons {
+            flex-direction: column;
+        }
+
+            .export-buttons .btn {
+                width: 100%;
+            }
     </style>
-</head>
-<body>
+
     <!-- Conteúdo Principal -->
-    <main class="col-md-10 mx-auto col-lg-10 px-md-4">
-        <div class="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom bg-light">
+<main class="container my-4 form-section">
+        <div class="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom bg-light rounded">
             <h1 class="h3 mb-0 text-dark">
                 <i class="bi bi-graph-up me-2"></i>Relatórios de Eventos
             </h1>
@@ -95,7 +203,7 @@
 
         <!-- Filtros -->
         <div class="filter-section mb-4">
-            <h5 class="mb-3">Filtros</h5>
+            <h5 class="mb-3"><i class="bi bi-funnel me-2"></i>Filtros do Relatório</h5>
             <div class="row g-3">
                 <div class="col-md-3">
                     <label class="form-label fw-bold">Período</label>
@@ -149,16 +257,23 @@
                     <input type="date" class="form-control" id="endDate">
                 </div>
             </div>
-            <div class="mt-3">
-                <button class="btn btn-primary" id="applyFilters">
-                    <i class="bi bi-funnel me-1"></i>Aplicar Filtros
-                </button>
-                <button class="btn btn-outline-secondary ms-2" id="resetFilters">
-                    <i class="bi bi-arrow-clockwise me-1"></i>Limpar Filtros
-                </button>
-                <button class="btn btn-success ms-2" id="exportReport">
-                    <i class="bi bi-file-earmark-spreadsheet me-1"></i>Exportar Relatório
-                </button>
+            <div class="mt-3 d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <button class="btn btn-primary" id="applyFilters">
+                        <i class="bi bi-funnel me-1"></i>Aplicar Filtros
+                    </button>
+                    <button class="btn btn-outline-secondary ms-2" id="resetFilters">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Limpar Filtros
+                    </button>
+                </div>
+                <div class="export-buttons mt-2 mt-md-0">
+                    <button class="btn btn-pdf" id="exportPDF">
+                        <i class="bi bi-file-earmark-pdf me-1"></i>Exportar PDF
+                    </button>
+                    <button class="btn btn-excel" id="exportExcel">
+                        <i class="bi bi-file-earmark-spreadsheet me-1"></i>Exportar Excel
+                    </button>
+                </div>
             </div>
         </div>
 
@@ -310,6 +425,15 @@
             </nav>
         </div>
     </main>
+
+
+    <!-- Overlay de Carregamento -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Carregando...</span>
+        </div>
+        <p class="mt-3" id="loadingText">Gerando relatório, aguarde...</p>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -803,6 +927,176 @@
             return secretaries[secretary] || secretary;
         }
 
+        // Função para exportar para Excel
+        function exportToExcel() {
+            showLoading('Exportando para Excel...');
+
+            // Pequeno delay para mostrar o loading
+            setTimeout(() => {
+                // Obter os eventos filtrados
+                const filteredEvents = filterEvents();
+
+                // Preparar os dados para exportação
+                const excelData = filteredEvents.map(event => ({
+                    'ID': event.id,
+                    'Nome do Evento': event.name,
+                    'Data de Início': formatDate(event.startDate),
+                    'Data de Término': formatDate(event.endDate),
+                    'Categoria': getCategoryText(event.category),
+                    'Secretaria': getSecretaryText(event.secretary),
+                    'Prioridade': getPriorityText(event.priority),
+                    'Status': getStatusText(event.status),
+                    'Descrição': event.description
+                }));
+
+                // Criar uma planilha
+                const ws = XLSX.utils.json_to_sheet(excelData);
+
+                // Criar um workbook
+                const wb = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(wb, ws, "Relatório de Eventos");
+
+                // Gerar o arquivo Excel e fazer o download
+                const currentDate = new Date().toISOString().slice(0, 10);
+                XLSX.writeFile(wb, `relatorio_eventos_prefeitura_${currentDate}.xlsx`);
+
+                hideLoading();
+            }, 1000);
+        }
+
+        // Função para exportar para PDF
+        function exportToPDF() {
+            showLoading('Gerando PDF...');
+
+            // Pequeno delay para mostrar o loading
+            setTimeout(() => {
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF('p', 'mm', 'a4');
+
+                // Obter os eventos filtrados
+                const filteredEvents = filterEvents();
+
+                // Adicionar cabeçalho com logo
+                doc.setFillColor(30, 58, 138);
+                doc.rect(0, 0, 210, 30, 'F');
+
+                // Logo (simulada com texto)
+                doc.setTextColor(255, 255, 255);
+                doc.setFontSize(16);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Prefeitura Municipal de Praia Grande', 105, 12, { align: 'center' });
+                doc.setFontSize(10);
+                doc.text('Relatório de Eventos - Secretaria de Eventos', 105, 18, { align: 'center' });
+
+                // Data de geração
+                const currentDate = new Date().toLocaleDateString('pt-BR');
+                doc.text(`Gerado em: ${currentDate}`, 105, 25, { align: 'center' });
+
+                // Adicionar estatísticas
+                let yPosition = 40;
+                doc.setTextColor(0, 0, 0);
+                doc.setFontSize(14);
+                doc.setFont('helvetica', 'bold');
+                doc.text('Resumo Estatístico', 20, yPosition);
+
+                yPosition += 10;
+                doc.setFontSize(10);
+                doc.setFont('helvetica', 'normal');
+                doc.text(`Total de Eventos: ${filteredEvents.length}`, 20, yPosition);
+                yPosition += 5;
+                doc.text(`Eventos Ativos: ${filteredEvents.filter(e => e.status === 'ativo').length}`, 20, yPosition);
+                yPosition += 5;
+                doc.text(`Eventos de Alta Prioridade: ${filteredEvents.filter(e => e.priority === 'alta' || e.priority === 'inadiavel').length}`, 20, yPosition);
+                yPosition += 5;
+                doc.text(`Secretarias Envolvidas: ${new Set(filteredEvents.map(e => e.secretary)).size}`, 20, yPosition);
+
+                yPosition += 10;
+
+                // Adicionar tabela de eventos
+                if (filteredEvents.length > 0) {
+                    doc.setFontSize(12);
+                    doc.setFont('helvetica', 'bold');
+                    doc.text('Lista de Eventos', 20, yPosition);
+                    yPosition += 7;
+
+                    // Cabeçalho da tabela
+                    doc.setFillColor(240, 240, 240);
+                    doc.rect(20, yPosition, 170, 7, 'F');
+                    doc.setFontSize(8);
+                    doc.setTextColor(0, 0, 0);
+                    doc.text('Evento', 22, yPosition + 5);
+                    doc.text('Data', 120, yPosition + 5);
+                    doc.text('Categoria', 140, yPosition + 5);
+                    doc.text('Secretaria', 160, yPosition + 5);
+                    doc.text('Prioridade', 180, yPosition + 5);
+
+                    yPosition += 7;
+
+                    // Conteúdo da tabela
+                    doc.setFont('helvetica', 'normal');
+                    filteredEvents.forEach((event, index) => {
+                        // Quebra de página se necessário
+                        if (yPosition > 270) {
+                            doc.addPage();
+                            yPosition = 20;
+
+                            // Cabeçalho da tabela em nova página
+                            doc.setFillColor(240, 240, 240);
+                            doc.rect(20, yPosition, 170, 7, 'F');
+                            doc.setFontSize(8);
+                            doc.setTextColor(0, 0, 0);
+                            doc.setFont('helvetica', 'bold');
+                            doc.text('Evento', 22, yPosition + 5);
+                            doc.text('Data', 120, yPosition + 5);
+                            doc.text('Categoria', 140, yPosition + 5);
+                            doc.text('Secretaria', 160, yPosition + 5);
+                            doc.text('Prioridade', 180, yPosition + 5);
+                            yPosition += 7;
+                            doc.setFont('helvetica', 'normal');
+                        }
+
+                        // Limitar o comprimento do texto para caber nas colunas
+                        const eventName = event.name.length > 50 ? event.name.substring(0, 47) + '...' : event.name;
+
+                        doc.text(eventName, 22, yPosition + 5);
+                        doc.text(formatDate(event.startDate), 120, yPosition + 5);
+                        doc.text(getCategoryText(event.category), 140, yPosition + 5);
+                        doc.text(getSecretaryText(event.secretary), 160, yPosition + 5);
+                        doc.text(getPriorityText(event.priority), 180, yPosition + 5);
+
+                        yPosition += 5;
+                    });
+                } else {
+                    doc.text('Nenhum evento encontrado com os filtros aplicados.', 20, yPosition);
+                }
+
+                // Rodapé
+                const pageCount = doc.internal.getNumberOfPages();
+                for (let i = 1; i <= pageCount; i++) {
+                    doc.setPage(i);
+                    doc.setFontSize(8);
+                    doc.setTextColor(100, 100, 100);
+                    doc.text(`Página ${i} de ${pageCount}`, 105, 290, { align: 'center' });
+                    doc.text('Prefeitura Municipal de Praia Grande - Relatório de Eventos', 105, 295, { align: 'center' });
+                }
+
+                // Salvar o PDF
+                doc.save(`relatorio_eventos_prefeitura_${new Date().toISOString().slice(0, 10)}.pdf`);
+
+                hideLoading();
+            }, 1000);
+        }
+
+        // Funções para mostrar/ocultar loading
+        function showLoading(message = 'Gerando relatório, aguarde...') {
+            document.getElementById('loadingText').textContent = message;
+            document.getElementById('loadingOverlay').style.display = 'flex';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingOverlay').style.display = 'none';
+        }
+
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
             // Mostrar/ocultar datas personalizadas
@@ -834,15 +1128,11 @@
                 updateDashboard(mockEvents);
             });
 
-            // Exportar relatório
-            document.getElementById('exportReport').addEventListener('click', function() {
-                alert('Funcionalidade de exportação seria implementada aqui!');
-                // Em uma implementação real, isso geraria um arquivo CSV, PDF ou Excel
-            });
+            // Exportar relatórios
+            document.getElementById('exportExcel').addEventListener('click', exportToExcel);
+            document.getElementById('exportPDF').addEventListener('click', exportToPDF);
 
             // Inicializar o dashboard com todos os eventos
             updateDashboard(mockEvents);
         });
     </script>
-</body>
-</html>

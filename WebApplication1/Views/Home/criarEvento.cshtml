@@ -1,6 +1,4 @@
-﻿
-
-<!-- Conteúdo Principal -->
+﻿<!-- Conteúdo Principal -->
 
 <main class="col-md-10 mx-auto col-lg-10 px-md-4 form-section">
 
@@ -34,7 +32,7 @@
 
         <!-- Banner do Evento -->
 
-      <div class="form-section">
+        <div class="form-section">
             <h3 class="section-title"> <i class="bi bi-images"></i> Banner do evento</h3>
 
             <div id="bannerPreviewContainer" class="mb-3" style="display: none;">
@@ -56,7 +54,7 @@
 
             <div class="row">
             </div>
-      </div>
+        </div>
 
         <!-- Informações Gerais -->
         <div class="form-section">
@@ -316,7 +314,7 @@
 
 
 
-@* <script>
+ <script>
     document.addEventListener('DOMContentLoaded', function() {
         const fileInput = document.getElementById('bannerUpload');
         const previewImage = document.getElementById('bannerPreview');
@@ -359,7 +357,7 @@
             previewImage.src = '';
         });
     });
-</script> *@
+</script> 
 <!-- JS - AREA DE PROGRAMAÇÃO -->
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -541,4 +539,246 @@
         // para dar o ponto de entrada ao usuário. Se o usuário deletar o único campo, o listener de remoção
         // irá chamar addFileUploadField(false) para restaurar a UI com 1 campo vazio e configurado.
     });
+</script>
+<!-- Adicione este script na página de criar eventos (criar-evento.html) -->
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, query, onSnapshot, getDoc, doc, setDoc, updateDoc, deleteDoc, getDocs, orderBy, where, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    // Configuração do Firebase
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+    let db;
+    let auth;
+    let currentEventId = null;
+    let isEditMode = false;
+
+    // Inicialização do Firebase
+    async function initializeFirebase() {
+        if (!firebaseConfig) return;
+
+        try {
+            const app = initializeApp(firebaseConfig);
+            db = getFirestore(app);
+            auth = getAuth(app);
+
+            await setPersistence(auth, browserLocalPersistence);
+            await signInAnonymously(auth);
+
+            // Verifica se está no modo de edição
+            checkEditMode();
+        } catch (error) {
+            console.error("Erro na inicialização do Firebase:", error);
+        }
+    }
+
+    // Verifica se está no modo de edição
+    function checkEditMode() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const editId = urlParams.get('edit');
+
+        if (editId) {
+            isEditMode = true;
+            currentEventId = editId;
+            document.querySelector('h1').textContent = 'Editar Evento';
+            document.querySelector('button[type="submit"]').textContent = 'Atualizar Evento';
+            loadEventData(editId);
+        }
+    }
+
+    // Carrega os dados do evento para edição
+    async function loadEventData(eventId) {
+        if (!db) return;
+
+        try {
+            const eventDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/events`, eventId));
+
+            if (eventDoc.exists()) {
+                const eventData = eventDoc.data();
+                populateForm(eventData);
+            } else {
+                alert('Evento não encontrado!');
+                window.location.href = 'dashboard.html';
+            }
+        } catch (error) {
+            console.error('Erro ao carregar evento:', error);
+            alert('Erro ao carregar dados do evento.');
+        }
+    }
+
+    // Preenche o formulário com os dados do evento
+    function populateForm(eventData) {
+        // Informações Gerais
+        document.querySelector('input[type="text"]').value = eventData.nomeEvento || '';
+
+        // Prioridade
+        const priority = eventData.prioridade?.toLowerCase();
+        if (priority) {
+            document.querySelector(`input[name="prioridade"][id="${priority}"]`).checked = true;
+        }
+
+        // Secretaria
+        if (eventData.secretaria) {
+            const secretariaSelect = document.querySelector('select');
+            for (let option of secretariaSelect.options) {
+                if (option.text.includes(eventData.secretaria)) {
+                    secretariaSelect.value = option.value;
+                    break;
+                }
+            }
+        }
+
+        // Tipo de Evento
+        if (eventData.tipoEvento) {
+            const tipoSelect = document.querySelectorAll('select')[1];
+            for (let option of tipoSelect.options) {
+                if (option.text.toLowerCase() === eventData.tipoEvento.toLowerCase()) {
+                    tipoSelect.value = option.value;
+                    break;
+                }
+            }
+        }
+
+        // Categoria
+        if (eventData.categoria) {
+            const categoriaSelect = document.querySelectorAll('select')[2];
+            for (let option of categoriaSelect.options) {
+                if (option.text.toLowerCase() === eventData.categoria.toLowerCase()) {
+                    categoriaSelect.value = option.value;
+                    break;
+                }
+            }
+        }
+
+        // Descrição
+        const textarea = document.querySelector('textarea');
+        if (textarea && eventData.descricao) {
+            textarea.value = eventData.descricao;
+        }
+
+        // Data e Hora
+        if (eventData.dataHoraInicio) {
+            const startDate = eventData.dataHoraInicio.toDate();
+            document.getElementById('dataHoraInicio').value = formatDateTimeLocal(startDate);
+        }
+
+        if (eventData.dataHoraTermino) {
+            const endDate = eventData.dataHoraTermino.toDate();
+            document.getElementById('dataHoraTermino').value = formatDateTimeLocal(endDate);
+        }
+
+        // Localização
+        if (eventData.cep) document.getElementById('cep').value = eventData.cep;
+        if (eventData.endereco) document.getElementById('endereco').value = eventData.endereco;
+        if (eventData.numero) document.getElementById('numero').value = eventData.numero;
+
+        // Bairro
+        if (eventData.bairro) {
+            const bairroSelect = document.getElementById('bairro');
+            for (let option of bairroSelect.options) {
+                if (option.text.toLowerCase() === eventData.bairro.toLowerCase()) {
+                    bairroSelect.value = option.value;
+                    break;
+                }
+            }
+        }
+
+        if (eventData.complemento) document.getElementById('complemento').value = eventData.complemento;
+    }
+
+    // Formata data para o input datetime-local
+    function formatDateTimeLocal(date) {
+        return date.toISOString().slice(0, 16);
+    }
+
+    // Modifica o evento de submit do formulário
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            if (isEditMode) {
+                await updateEvent();
+            } else {
+                await createEvent();
+            }
+        });
+
+        // Botão voltar
+        const backButton = document.querySelector('button[type="button"]');
+        if (backButton) {
+            backButton.addEventListener('click', function() {
+                window.location.href = 'dashboard.html';
+            });
+        }
+
+        initializeFirebase();
+    });
+
+    // Função para criar novo evento
+    async function createEvent() {
+        if (!db) return;
+
+        try {
+            const formData = getFormData();
+            const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
+
+            await setDoc(doc(eventsCollectionRef), {
+                ...formData,
+                criadoEm: new Date(),
+                criadoPor: auth.currentUser?.uid || 'anonimo'
+            });
+
+            alert('Evento criado com sucesso!');
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            console.error('Erro ao criar evento:', error);
+            alert('Erro ao criar evento.');
+        }
+    }
+
+    // Função para atualizar evento existente
+    async function updateEvent() {
+        if (!db || !currentEventId) return;
+
+        try {
+            const formData = getFormData();
+            const eventDocRef = doc(db, `artifacts/${appId}/public/data/events`, currentEventId);
+
+            await updateDoc(eventDocRef, {
+                ...formData,
+                atualizadoEm: new Date(),
+                atualizadoPor: auth.currentUser?.uid || 'anonimo'
+            });
+
+            alert('Evento atualizado com sucesso!');
+            window.location.href = 'dashboard.html';
+        } catch (error) {
+            console.error('Erro ao atualizar evento:', error);
+            alert('Erro ao atualizar evento.');
+        }
+    }
+
+    // Obtém dados do formulário
+    function getFormData() {
+        return {
+            nomeEvento: document.querySelector('input[type="text"]').value,
+            prioridade: document.querySelector('input[name="prioridade"]:checked')?.nextElementSibling.textContent,
+            secretaria: document.querySelector('select').value,
+            tipoEvento: document.querySelectorAll('select')[1].value,
+            categoria: document.querySelectorAll('select')[2].value,
+            descricao: document.querySelector('textarea').value,
+            dataHoraInicio: new Date(document.getElementById('dataHoraInicio').value),
+            dataHoraTermino: new Date(document.getElementById('dataHoraTermino').value),
+            cep: document.getElementById('cep').value,
+            endereco: document.getElementById('endereco').value,
+            numero: document.getElementById('numero').value,
+            bairro: document.getElementById('bairro').value,
+            complemento: document.getElementById('complemento').value
+        };
+    }
 </script>

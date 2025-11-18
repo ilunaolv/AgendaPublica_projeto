@@ -33,15 +33,17 @@
             </a>
 
             <!-- Notificações -->
-            <button class="btn btn-link position-relative" aria-label="Ver notificações (3 novas)" id="btnNotificacoes">
+            <a asp-controller="Home" asp-action="notificacoes" id="openNotifications"  type="button" class="btn btn-link position-relative" aria-label="Ver notificações (3 novas)">
                 <i class="bi bi-bell-fill fs-5 text-primary"></i>
                 <span class="visually-hidden">Abrir notificações</span>
                 <!-- Badge de notificação -->
                 <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle">
                     <span class="visually-hidden">3 notificações não lidas</span>
                 </span>
-            </button>
+            </a>
+
+          
+
         </div>
     </div>
 </header>
-

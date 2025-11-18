@@ -1,5 +1,4 @@
-﻿
-<body class="min-h-screen">
+﻿<body class="min-h-screen">
     <div id="app" class="flex">
 
         <!-- Conteúdo Principal do Dashboard -->
@@ -16,13 +15,13 @@
                     </div>
                     <p id="totalEvents" class="text-4xl font-bold mt-2 text-gray-900">0</p>
                 </div>
-                <!-- Prioridade Alta -->
+                <!-- Prioridade Inadiável -->
                 <div class="stat-card bg-white p-6 rounded-xl shadow-md border-b-4 border-red-500">
                     <div class="flex items-center justify-between">
-                        <span class="text-gray-500 font-medium">Prioridade Alta</span>
+                        <span class="text-gray-500 font-medium">Prioridade Inadiável</span>
                         <i class="bi bi-fire text-2xl text-red-500"></i>
                     </div>
-                    <p id="highPriority" class="text-4xl font-bold mt-2 text-gray-900">0</p>
+                    <p id="inadiavelPriority" class="text-4xl font-bold mt-2 text-gray-900">0</p>
                 </div>
                 <!-- Eventos Públicos -->
                 <div class="stat-card bg-white p-6 rounded-xl shadow-md border-b-4 border-green-500">
@@ -32,7 +31,7 @@
                     </div>
                     <p id="publicEvents" class="text-4xl font-bold mt-2 text-gray-900">0</p>
                 </div>
-                <!-- Próximo Evento (Placeholder) -->
+                <!-- Próximo Evento -->
                 <div class="stat-card bg-white p-6 rounded-xl shadow-md border-b-4 border-yellow-500">
                     <div class="flex items-center justify-between">
                         <span class="text-gray-500 font-medium">Próximo Início</span>
@@ -42,13 +41,68 @@
                 </div>
             </div>
 
-            <!-- Tabela de Eventos Recentes -->
-            <div class="bg-white p-6 rounded-xl shadow-lg">
+            <!-- Filtros e Controles de Visualização -->
+            <div class="bg-white p-6 rounded-xl shadow-lg mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                    <h2 class="text-2xl font-semibold text-gray-800">Filtros</h2>
+
+                    <!-- Botões de Visualização -->
+                    <div class="flex gap-2">
+                        <button id="viewListBtn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg flex items-center gap-2">
+                            <i class="bi bi-list-ul"></i>
+                        </button>
+                        <button id="viewCalendarBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg flex items-center gap-2">
+                            <i class="bi bi-calendar-week"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <!-- Filtro por Secretaria -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Secretaria</label>
+                        <select id="secretariaFilter" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Todas as Secretarias</option>
+                            <!-- Opções serão preenchidas dinamicamente -->
+                        </select>
+                    </div>
+
+                    <!-- Filtro por Categoria -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Categoria</label>
+                        <select id="categoriaFilter" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Todas as Categorias</option>
+                            <option value="Secretaria de Planejamento (SEPLAN)">Secretaria de Planejamento (SEPLAN)</option>
+                            <option value="Secretaria de Educação (SEDUC)">Secretaria de Educação (SEDUC)</option>
+                            <option value="Secretaria de Administração (SEAD)">Secretaria de Administração (SEAD)</option>
+                        </select>
+                    </div>
+
+                    <!-- Filtro por Prioridade -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Prioridade</label>
+                        <select id="prioridadeFilter" class="w-full p-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Todas as Prioridades</option>
+                            <option value="inadiável">Inadiável</option>
+                            <option value="alta">Alta</option>
+                            <option value="normal">Normal</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Botão Limpar Filtros -->
+                <div class="mt-4 flex justify-end">
+                    <button id="clearFiltersBtn" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
+                        Limpar Filtros
+                    </button>
+                </div>
+            </div>
+
+            <!-- Container para Visualização de Lista (existente) -->
+            <div id="listView" class="bg-white p-6 rounded-xl shadow-lg">
                 <div class="flex justify-between items-center mb-4 border-b pb-3">
                     <h2 class="text-2xl font-semibold text-gray-800">Lista de Eventos Cadastrados</h2>
-                    <a href="#" class="text-indigo-600 hover:text-indigo-800 flex items-center">
-                        Ver Todos <i class="bi bi-arrow-right ml-2"></i>
-                    </a>
+                    <span class="text-sm text-gray-500" id="lastUpdate"></span>
                 </div>
 
                 <div class="overflow-x-auto">
@@ -63,7 +117,6 @@
                             </tr>
                         </thead>
                         <tbody id="eventsTableBody" class="bg-white divide-y divide-gray-200">
-                            <!-- Linhas de eventos serão inseridas aqui pelo JS -->
                             <tr>
                                 <td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center">Carregando eventos...</td>
                             </tr>
@@ -77,6 +130,38 @@
                     <p class="text-gray-500 mt-2">Buscando dados...</p>
                 </div>
             </div>
+
+            <!-- Container para Visualização de Calendário (novo) -->
+            <div id="calendarView" class="bg-white p-6 rounded-xl shadow-lg hidden">
+                <div class="flex justify-between items-center mb-4 border-b pb-3">
+                    <h2 class="text-2xl font-semibold text-gray-800">Visualização de Calendário</h2>
+                    <div class="flex items-center gap-4">
+                        <button id="prevMonthBtn" class="p-2 rounded-full hover:bg-gray-100">
+                            <i class="bi bi-chevron-left"></i>
+                        </button>
+                        <span id="currentMonthYear" class="text-lg font-medium">Carregando...</span>
+                        <button id="nextMonthBtn" class="p-2 rounded-full hover:bg-gray-100">
+                            <i class="bi bi-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Cabeçalho dos dias da semana -->
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                    <div class="text-center font-medium text-gray-500 py-2">Dom</div>
+                    <div class="text-center font-medium text-gray-500 py-2">Seg</div>
+                    <div class="text-center font-medium text-gray-500 py-2">Ter</div>
+                    <div class="text-center font-medium text-gray-500 py-2">Qua</div>
+                    <div class="text-center font-medium text-gray-500 py-2">Qui</div>
+                    <div class="text-center font-medium text-gray-500 py-2">Sex</div>
+                    <div class="text-center font-medium text-gray-500 py-2">Sáb</div>
+                </div>
+
+                <!-- Grade do calendário -->
+                <div id="calendarGrid" class="grid grid-cols-7 gap-1">
+                    <!-- Os dias serão preenchidos dinamicamente -->
+                </div>
+            </div>
         </main>
     </div>
 
@@ -86,7 +171,7 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, query, onSnapshot, getDoc, doc, setDoc, updateDoc, deleteDoc, getDocs, orderBy, where, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Variáveis globais (fornecidas pelo ambiente)
+        // Variáveis globais
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
         const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
@@ -94,15 +179,33 @@
         let db;
         let auth;
         let userId = null;
-        let isAuthReady = false;
+        let unsubscribeEvents = null;
+        let allEvents = []; // Armazena todos os eventos para filtragem
+        let currentView = 'list'; // 'list' ou 'calendar'
+        let currentDate = new Date(); // Data atual para o calendário
 
         // Configurações do DOM
         const totalEventsEl = document.getElementById('totalEvents');
-        const highPriorityEl = document.getElementById('highPriority');
+        const inadiavelPriorityEl = document.getElementById('inadiavelPriority');
         const publicEventsEl = document.getElementById('publicEvents');
         const nextEventDateEl = document.getElementById('nextEventDate');
         const eventsTableBody = document.getElementById('eventsTableBody');
         const loadingIndicator = document.getElementById('loadingIndicator');
+        const lastUpdateEl = document.getElementById('lastUpdate');
+
+        // Novos elementos para filtros e visualização
+        const listView = document.getElementById('listView');
+        const calendarView = document.getElementById('calendarView');
+        const viewListBtn = document.getElementById('viewListBtn');
+        const viewCalendarBtn = document.getElementById('viewCalendarBtn');
+        const secretariaFilter = document.getElementById('secretariaFilter');
+        const categoriaFilter = document.getElementById('categoriaFilter');
+        const prioridadeFilter = document.getElementById('prioridadeFilter');
+        const clearFiltersBtn = document.getElementById('clearFiltersBtn');
+        const calendarGrid = document.getElementById('calendarGrid');
+        const currentMonthYear = document.getElementById('currentMonthYear');
+        const prevMonthBtn = document.getElementById('prevMonthBtn');
+        const nextMonthBtn = document.getElementById('nextMonthBtn');
 
         // Função utilitária para formatar data e hora
         function formatDate(timestamp) {
@@ -120,13 +223,214 @@
         // Função para determinar a cor da prioridade
         function getPriorityColor(priority) {
             switch (priority ? priority.toLowerCase() : '') {
-                case 'alta':
-                    return 'bg-red-100 text-red-800';
                 case 'inadiável':
+                    return 'bg-red-100 text-red-800';
+                case 'alta':
                     return 'bg-purple-100 text-purple-800';
                 case 'normal':
                 default:
                     return 'bg-blue-100 text-blue-800';
+            }
+        }
+
+        // Função para navegar para a página de edição
+        function navigateToEditEvent(eventId) {
+            window.location.href = `criar-evento.html?edit=${eventId}`;
+        }
+
+        // Função para excluir evento
+        async function deleteEvent(eventId, eventName) {
+            if (!confirm(`Tem certeza que deseja excluir o evento "${eventName}"?`)) {
+                return;
+            }
+
+            try {
+                const eventDocRef = doc(db, `artifacts/${appId}/public/data/events`, eventId);
+                await deleteDoc(eventDocRef);
+
+                // Mostra mensagem de sucesso
+                showNotification('Evento excluído com sucesso!', 'success');
+            } catch (error) {
+                console.error('Erro ao excluir evento:', error);
+                showNotification('Erro ao excluir evento.', 'error');
+            }
+        }
+
+        // Função para mostrar notificações
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg text-white ${
+                type === 'success' ? 'bg-green-500' :
+                type === 'error' ? 'bg-red-500' : 'bg-blue-500'
+            }`;
+            notification.textContent = message;
+
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Função para aplicar filtros
+        function applyFilters() {
+            const secretariaValue = secretariaFilter.value;
+            const categoriaValue = categoriaFilter.value;
+            const prioridadeValue = prioridadeFilter.value;
+
+            let filteredEvents = [...allEvents];
+
+            // Aplica filtros
+            if (secretariaValue) {
+                filteredEvents = filteredEvents.filter(event =>
+                    event.secretaria && event.secretaria.toLowerCase() === secretariaValue.toLowerCase()
+                );
+            }
+
+            if (categoriaValue) {
+                filteredEvents = filteredEvents.filter(event =>
+                    event.categoria && event.categoria.toLowerCase() === categoriaValue.toLowerCase()
+                );
+            }
+
+            if (prioridadeValue) {
+                filteredEvents = filteredEvents.filter(event =>
+                    event.prioridade && event.prioridade.toLowerCase() === prioridadeValue.toLowerCase()
+                );
+            }
+
+            // Renderiza os eventos filtrados
+            if (currentView === 'list') {
+                renderEvents(filteredEvents);
+            } else {
+                renderCalendar(currentDate, filteredEvents);
+            }
+        }
+
+        // Função para preencher opções de filtro
+        function populateFilterOptions(events) {
+            // Limpa opções existentes (exceto a primeira)
+            while (secretariaFilter.children.length > 1) {
+                secretariaFilter.removeChild(secretariaFilter.lastChild);
+            }
+            while (categoriaFilter.children.length > 1) {
+                categoriaFilter.removeChild(categoriaFilter.lastChild);
+            }
+
+            // Coleta valores únicos
+            const secretarias = [...new Set(events.map(event => event.secretaria).filter(Boolean))];
+            const categorias = [...new Set(events.map(event => event.categoria).filter(Boolean))];
+
+            // Adiciona opções de secretaria
+            secretarias.forEach(secretaria => {
+                const option = document.createElement('option');
+                option.value = secretaria.toLowerCase();
+                option.textContent = secretaria;
+                secretariaFilter.appendChild(option);
+            });
+
+            // Adiciona opções de categoria
+            categorias.forEach(categoria => {
+                const option = document.createElement('option');
+                option.value = categoria.toLowerCase();
+                option.textContent = categoria;
+                categoriaFilter.appendChild(option);
+            });
+        }
+
+        // Função para alternar entre visualizações
+        function toggleView(view) {
+            currentView = view;
+
+            if (view === 'list') {
+                listView.classList.remove('hidden');
+                calendarView.classList.add('hidden');
+                viewListBtn.classList.add('bg-indigo-600', 'text-white');
+                viewListBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                viewCalendarBtn.classList.add('bg-gray-200', 'text-gray-700');
+                viewCalendarBtn.classList.remove('bg-indigo-600', 'text-white');
+                renderEvents(allEvents);
+            } else {
+                listView.classList.add('hidden');
+                calendarView.classList.remove('hidden');
+                viewCalendarBtn.classList.add('bg-indigo-600', 'text-white');
+                viewCalendarBtn.classList.remove('bg-gray-200', 'text-gray-700');
+                viewListBtn.classList.add('bg-gray-200', 'text-gray-700');
+                viewListBtn.classList.remove('bg-indigo-600', 'text-white');
+                renderCalendar(currentDate, allEvents);
+            }
+        }
+
+        // Função para renderizar o calendário
+        function renderCalendar(date, events) {
+            const year = date.getFullYear();
+            const month = date.getMonth();
+
+            // Atualiza o cabeçalho do mês/ano
+            const monthNames = [
+                'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
+                'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
+            ];
+            currentMonthYear.textContent = `${monthNames[month]} ${year}`;
+
+            // Limpa o grid do calendário
+            calendarGrid.innerHTML = '';
+
+            // Primeiro dia do mês
+            const firstDay = new Date(year, month, 1);
+            // Último dia do mês
+            const lastDay = new Date(year, month + 1, 0);
+            // Dia da semana do primeiro dia (0 = Domingo, 1 = Segunda, etc.)
+            const firstDayOfWeek = firstDay.getDay();
+
+            // Adiciona células vazias para os dias antes do primeiro dia do mês
+            for (let i = 0; i < firstDayOfWeek; i++) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'h-24 bg-gray-50 rounded';
+                calendarGrid.appendChild(emptyCell);
+            }
+
+            // Adiciona os dias do mês
+            for (let day = 1; day <= lastDay.getDate(); day++) {
+                const dayCell = document.createElement('div');
+                dayCell.className = 'h-24 border border-gray-200 p-1 overflow-y-auto';
+
+                // Data atual sendo renderizada
+                const currentDate = new Date(year, month, day);
+
+                // Verifica se é hoje
+                const today = new Date();
+                if (currentDate.toDateString() === today.toDateString()) {
+                    dayCell.classList.add('bg-blue-50');
+                }
+
+                // Cabeçalho do dia
+                const dayHeader = document.createElement('div');
+                dayHeader.className = 'text-right font-medium mb-1';
+                dayHeader.textContent = day;
+                dayCell.appendChild(dayHeader);
+
+                // Eventos para este dia
+                const dayEvents = events.filter(event => {
+                    if (!event.dataHoraInicio || !event.dataHoraInicio.toDate) return false;
+
+                    const eventDate = event.dataHoraInicio.toDate();
+                    return eventDate.getDate() === day &&
+                           eventDate.getMonth() === month &&
+                           eventDate.getFullYear() === year;
+                });
+
+                // Adiciona eventos ao dia
+                dayEvents.forEach(event => {
+                    const eventElement = document.createElement('div');
+                    eventElement.className = `text-xs p-1 mb-1 rounded truncate cursor-pointer ${getPriorityColor(event.prioridade)}`;
+                    eventElement.textContent = event.nomeEvento || 'Evento sem nome';
+                    eventElement.title = `${event.nomeEvento || 'Evento sem nome'} - ${formatDate(event.dataHoraInicio)}`;
+                    eventElement.addEventListener('click', () => navigateToEditEvent(event.id));
+                    dayCell.appendChild(eventElement);
+                });
+
+                calendarGrid.appendChild(dayCell);
             }
         }
 
@@ -137,41 +441,63 @@
             if (events.length === 0) {
                 eventsTableBody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center">Nenhum evento cadastrado.</td>
+                        <td colspan="5" class="px-4 py-4 text-sm text-gray-500 text-center">
+                            Nenhum evento cadastrado.
+                            <a href="criar-evento.cshtml" class="text-indigo-600 hover:text-indigo-800 ml-1">
+                                Crie o primeiro evento!
+                            </a>
+                        </td>
                     </tr>
                 `;
                 return;
             }
 
-            // Ordena os eventos pela data de início (em memória, evitando orderBy no Firestore)
-            events.sort((a, b) => (a.dataHoraInicio.seconds || 0) - (b.dataHoraInicio.seconds || 0));
+            // Ordena os eventos pela data de início (mais recentes primeiro)
+            events.sort((a, b) => (b.dataHoraInicio?.seconds || 0) - (a.dataHoraInicio?.seconds || 0));
 
             // Atualiza as métricas
             totalEventsEl.textContent = events.length;
-            highPriorityEl.textContent = events.filter(e => e.prioridade && e.prioridade.toLowerCase() === 'alta').length;
+            inadiavelPriorityEl.textContent = events.filter(e => e.prioridade && e.prioridade.toLowerCase() === 'inadiável').length;
             publicEventsEl.textContent = events.filter(e => e.tipoEvento && e.tipoEvento.toLowerCase() === 'publico').length;
 
-            // Próximo evento (o primeiro após a ordenação)
-            nextEventDateEl.textContent = events[0] ? formatDate(events[0].dataHoraInicio) : 'N/A';
+            // Próximo evento (o mais próximo no futuro)
+            const now = new Date();
+            const futureEvents = events
+                .filter(event => event.dataHoraInicio && event.dataHoraInicio.toDate() > now)
+                .sort((a, b) => (a.dataHoraInicio.seconds || 0) - (b.dataHoraInicio.seconds || 0));
+
+            nextEventDateEl.textContent = futureEvents[0] ? formatDate(futureEvents[0].dataHoraInicio) : 'Nenhum evento futuro';
+
+            // Atualiza o timestamp da última atualização
+            lastUpdateEl.textContent = `Atualizado em ${new Date().toLocaleTimeString('pt-BR')}`;
 
             // Renderiza as linhas da tabela
             events.forEach(event => {
                 const priorityClass = getPriorityColor(event.prioridade);
+                const startDate = event.dataHoraInicio ? formatDate(event.dataHoraInicio) : 'N/A';
+                const isPastEvent = event.dataHoraInicio && event.dataHoraInicio.toDate() < new Date();
 
                 const row = document.createElement('tr');
-                row.className = 'hover:bg-gray-50';
+                row.className = `hover:bg-gray-50 ${isPastEvent ? 'opacity-60' : ''}`;
                 row.innerHTML = `
-                    <td class="px-4 py-3 text-sm font-medium text-gray-900">${event.nomeEvento || 'Sem Nome'}</td>
+                    <td class="px-4 py-3 text-sm font-medium text-gray-900">
+                        ${event.nomeEvento || 'Sem Nome'}
+                        ${isPastEvent ? '<span class="ml-2 text-xs text-gray-500">(Realizado)</span>' : ''}
+                    </td>
                     <td class="px-4 py-3 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${priorityClass}">
                             ${event.prioridade || 'Normal'}
                         </span>
                     </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${formatDate(event.dataHoraInicio)}</td>
+                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">${startDate}</td>
                     <td class="px-4 py-3 text-sm text-gray-500">${event.endereco || 'Local Não Informado'}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                        <a href="#" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Detalhes"><i class="bi bi-eye"></i></a>
-                        <a href="#" class="text-red-600 hover:text-red-900" title="Excluir"><i class="bi bi-trash"></i></a>
+                        <button onclick="navigateToEditEvent('${event.id}')" class="text-indigo-600 hover:text-indigo-900 mr-3" title="Editar">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button onclick="deleteEvent('${event.id}', '${event.nomeEvento || 'Evento'}')" class="text-red-600 hover:text-red-900" title="Excluir">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </td>
                 `;
                 eventsTableBody.appendChild(row);
@@ -180,20 +506,18 @@
 
         // Função para escutar a coleção de eventos
         function subscribeToEvents() {
-            if (!db || !userId) return;
+            if (!db) return;
 
             loadingIndicator.classList.remove('hidden');
 
-            // Caminho para a coleção pública (simulando eventos compartilhados/públicos)
-            // Usaremos a estrutura /artifacts/{appId}/public/data/events
+            // Caminho para a coleção de eventos
             const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
 
             // Cria a query para buscar a coleção
-            // NOTA: 'orderBy' foi removido para evitar erros de índice, a ordenação é feita em memória.
             const eventsQuery = query(eventsCollectionRef);
 
             // onSnapshot para escuta em tempo real
-            const unsubscribe = onSnapshot(eventsQuery, (snapshot) => {
+            unsubscribeEvents = onSnapshot(eventsQuery, (snapshot) => {
                 loadingIndicator.classList.add('hidden');
 
                 const events = [];
@@ -201,7 +525,18 @@
                     events.push({ id: doc.id, ...doc.data() });
                 });
 
-                renderEvents(events);
+                // Armazena todos os eventos para filtragem
+                allEvents = events;
+
+                // Preenche opções de filtro
+                populateFilterOptions(events);
+
+                // Renderiza com base na visualização atual
+                if (currentView === 'list') {
+                    renderEvents(events);
+                } else {
+                    renderCalendar(currentDate, events);
+                }
 
             }, (error) => {
                 console.error("Erro ao carregar eventos:", error);
@@ -210,16 +545,17 @@
                     <tr>
                         <td colspan="5" class="px-4 py-4 text-sm font-semibold text-red-600 text-center">
                             Erro ao carregar dados. Verifique a conexão.
+                            <br>
+                            <button onclick="location.reload()" class="text-indigo-600 hover:text-indigo-800 mt-2">
+                                Tentar novamente
+                            </button>
                         </td>
                     </tr>
                 `;
             });
-
-            // Retorna a função de unsubscribe para limpeza (boa prática)
-            return unsubscribe;
         }
 
-        // Função de autenticação (usando o token fornecido ou anonimamente)
+        // Função de autenticação
         async function initializeAuthAndFirestore() {
             if (!firebaseConfig) {
                 console.error("Configuração do Firebase não encontrada.");
@@ -231,9 +567,6 @@
                 const app = initializeApp(firebaseConfig);
                 db = getFirestore(app);
                 auth = getAuth(app);
-
-                // Configura o log para debug
-                // setLogLevel('debug');
 
                 // 2. Realiza a autenticação
                 await setPersistence(auth, browserLocalPersistence);
@@ -247,96 +580,80 @@
                 onAuthStateChanged(auth, (user) => {
                     if (user) {
                         userId = user.uid;
-                        isAuthReady = true;
                         console.log("Usuário autenticado:", userId);
                         // Inicia a escuta dos dados APÓS a autenticação
                         subscribeToEvents();
                     } else {
-                        userId = crypto.randomUUID(); // ID temporário se a autenticação falhar
-                        isAuthReady = false;
+                        userId = crypto.randomUUID();
                         console.log("Autenticação anônima ou falha na autenticação. Usando ID temporário.");
-                        // Mesmo sem auth, tentamos carregar, mas pode falhar pelas regras de segurança
                         subscribeToEvents();
                     }
                 });
 
             } catch (error) {
                 console.error("Erro na inicialização do Firebase ou Autenticação:", error);
-                isAuthReady = true; // Permite a renderização do erro
+                showNotification('Erro de conexão com o servidor.', 'error');
+            }
+        }
+
+        // Verifica se há parâmetros de sucesso na URL
+        function checkUrlParams() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const success = urlParams.get('success');
+            const action = urlParams.get('action');
+
+            if (success === 'true') {
+                if (action === 'create') {
+                    showNotification('Evento criado com sucesso!', 'success');
+                } else if (action === 'update') {
+                    showNotification('Evento atualizado com sucesso!', 'success');
+                }
+
+                // Limpa a URL
+                window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
 
         // 4. Inicia o processo
         initializeAuthAndFirestore();
+        checkUrlParams();
 
-        // SIMULANDO A CRIAÇÃO DE DADOS INICIAIS (PARA TESTE)
-        // Esta função deve ser chamada apenas uma vez para popular o banco de dados
-        async function createInitialData() {
-            // Espera a autenticação para garantir que o userId e db estejam prontos
-            await new Promise(resolve => onAuthStateChanged(auth, resolve));
+        // Configura eventos dos botões de visualização
+        viewListBtn.addEventListener('click', () => toggleView('list'));
+        viewCalendarBtn.addEventListener('click', () => toggleView('calendar'));
 
-            const eventsData = [
-                {
-                    nomeEvento: "Maratona Praia Grande 2025",
-                    prioridade: "Alta",
-                    tipoEvento: "Publico",
-                    secretaria: "SEPLAN",
-                    categoria: "Evento cultural",
-                    dataHoraInicio: new Date('2025-05-20T08:00:00'),
-                    dataHoraTermino: new Date('2025-05-20T12:00:00'),
-                    endereco: "Av. Pres. Castelo Branco, 1000",
-                    cep: "11700-000"
-                },
-                {
-                    nomeEvento: "Workshop de Inovação Digital",
-                    prioridade: "Normal",
-                    tipoEvento: "Privado",
-                    secretaria: "SEDUC",
-                    categoria: "Workshop",
-                    dataHoraInicio: new Date('2025-06-15T14:30:00'),
-                    dataHoraTermino: new Date('2025-06-15T17:00:00'),
-                    endereco: "Rua do Saber, 50",
-                    cep: "11700-123"
-                },
-                {
-                    nomeEvento: "Reunião Anual - Gestão",
-                    prioridade: "Inadiável",
-                    tipoEvento: "Privado",
-                    secretaria: "SEPLAN",
-                    categoria: "Palestra",
-                    dataHoraInicio: new Date('2025-04-10T10:00:00'),
-                    dataHoraTermino: new Date('2025-04-10T11:00:00'),
-                    endereco: "Paço Municipal",
-                    cep: "11700-999"
-                }
-            ];
+        // Configura eventos dos filtros
+        secretariaFilter.addEventListener('change', applyFilters);
+        categoriaFilter.addEventListener('change', applyFilters);
+        prioridadeFilter.addEventListener('change', applyFilters);
+        clearFiltersBtn.addEventListener('click', () => {
+            secretariaFilter.value = '';
+            categoriaFilter.value = '';
+            prioridadeFilter.value = '';
+            applyFilters();
+        });
 
-            const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
+        // Configura eventos do calendário
+        prevMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() - 1);
+            renderCalendar(currentDate, allEvents);
+        });
 
-            // Verifica se a coleção já existe antes de popular para evitar duplicação
-            const querySnapshot = await getDocs(eventsCollectionRef);
-            if (querySnapshot.empty) {
-                console.log("Populando o Firestore com dados iniciais...");
-                for (const data of eventsData) {
-                    // Firestore não aceita Date nativo em setDoc, precisa ser convertido ou usado nativamente
-                    // Se for para setDoc, usa-se a forma abaixo (ou apenas passa o Date se usar addDoc)
-                    const firestoreData = {
-                        ...data,
-                        dataHoraInicio: data.dataHoraInicio,
-                        dataHoraTermino: data.dataHoraTermino,
-                        // Convertendo a data para o formato aceito pelo Firestore no setDoc
-                        // (o Firestore lida bem com objetos Date nativos)
-                    };
-                    await setDoc(doc(eventsCollectionRef), firestoreData);
-                }
-                console.log("Dados iniciais criados com sucesso.");
-            } else {
-                 console.log("Coleção 'events' já populada. Pulando criação de dados iniciais.");
+        nextMonthBtn.addEventListener('click', () => {
+            currentDate.setMonth(currentDate.getMonth() + 1);
+            renderCalendar(currentDate, allEvents);
+        });
+
+        // Torna as funções globais para serem acessíveis pelos botões
+        window.navigateToEditEvent = navigateToEditEvent;
+        window.deleteEvent = deleteEvent;
+
+        // Limpeza ao sair da página
+        window.addEventListener('beforeunload', () => {
+            if (unsubscribeEvents) {
+                unsubscribeEvents();
             }
-        }
-
-        // Descomente a linha abaixo se você quiser que os dados de exemplo sejam criados no seu Firestore
-        // createInitialData();
+        });
 
     </script>
 </body>
