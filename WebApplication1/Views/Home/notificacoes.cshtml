@@ -1,452 +1,260 @@
-﻿
-    <style>
-        /* Estilos gerais */
+﻿@{
+    ViewData["Title"] = "Notificações";
+}
 
+<style>
+    /* ESTILOS ESPECÍFICOS DA PÁGINA DE NOTIFICAÇÕES COMPLETA */
+    .page-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
 
-        /* Header */
-        .barra-acessibilidade {
-            background-color: #0077c8 !important;
+    .notifications-list {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        overflow: hidden;
+        margin-top: 20px;
+    }
+
+    .notification-card {
+        padding: 15px;
+        border-bottom: 1px solid #eee;
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+        .notification-card:last-child {
+            border-bottom: none;
         }
 
-            .barra-acessibilidade .btn-link {
-                text-decoration: none;
-                color: white !important;
-                font-size: 0.9rem;
-            }
-
-        .header-principal {
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        .notification-card.unread {
+            background-color: #f0f8ff;
+            border-left: 3px solid #0077c8;
         }
 
-        /* Ícone de notificação */
-        .notification-icon {
-            position: relative;
-            cursor: pointer;
-            font-size: 22px;
-            display: inline-block;
-        }
+    .notification-icon-large {
+        font-size: 24px;
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        margin-top: 5px;
+    }
 
-            .notification-icon .badge {
-                position: absolute;
-                top: -8px;
-                right: -10px;
-                background: #dc3545;
-                color: #fff;
-                font-size: 12px;
-                padding: 2px 6px;
-                border-radius: 50%;
-            }
+    .notification-content {
+        flex-grow: 1;
+    }
 
-        /* Overlay */
-        .modal-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.3);
-            display: none;
-            justify-content: center;
-            align-items: start;
-            padding-top: 80px;
-            z-index: 9999;
-        }
+    .notification-title {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #333;
+    }
 
-        /* Caixa do modal */
-        .modal-box {
-            background: white;
-            width: 380px;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0px 4px 10px rgba(0,0,0,.3);
-        }
+    .notification-desc {
+        color: #666;
+        margin-bottom: 5px;
+        line-height: 1.4;
+    }
 
-        /* Header */
-        .modal-header {
+    .notification-time {
+        font-size: 0.8rem;
+        color: #999;
+        margin-bottom: 8px;
+    }
+
+    .notification-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.875rem;
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .filter-btn {
+        background: white;
+        border: 1px solid #dee2e6;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+        .filter-btn.active {
             background: #0077c8;
             color: white;
-            padding: 15px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            border-color: #0077c8;
         }
 
-            .modal-header h3 {
-                margin: 0;
-                font-size: 20px;
-            }
-
-        .close-btn {
-            background: transparent;
-            border: none;
-            color: white;
-            font-size: 22px;
-            cursor: pointer;
+        .filter-btn:hover:not(.active) {
+            background: #f8f9fa;
         }
 
-        /* Conteúdo */
-        .modal-content {
-            padding: 15px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
+    .notification-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #0077c8;
+    }
 
-        .notif-item {
-            display: flex;
-            gap: 10px;
-            padding: 12px 0;
-            border-bottom: 1px solid #eee;
-            cursor: pointer;
-        }
+    .notification-count {
+        background: #0077c8;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.9rem;
+    }
+</style>
 
-            .notif-item:hover {
-                background-color: #f8f9fa;
-            }
 
-            .notif-item:last-child {
-                border-bottom: none;
-            }
-
-        .icon {
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-
-        .notif-content {
-            flex-grow: 1;
-        }
-
-        .notif-title {
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-
-        .notif-desc {
-            font-size: 0.9rem;
-            color: #666;
-        }
-
-        .notif-time {
-            font-size: 0.8rem;
-            color: #999;
-            margin-top: 4px;
-        }
-
-        /* Ver todas */
-        .view-all {
-            text-align: right;
-            margin-top: 10px;
-        }
-
-            .view-all a {
-                color: #0077c8;
-                font-size: 14px;
-                text-decoration: none;
-            }
-
-        /* Página de notificações */
-        .page-container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .page-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        .page-title {
-            color: #0077c8;
-            font-weight: 600;
-        }
-
-        .notifications-list {
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            overflow: hidden;
-        }
-
-        .notification-card {
-            padding: 15px;
-            border-bottom: 1px solid #eee;
-            display: flex;
-            gap: 12px;
-        }
-
-            .notification-card:last-child {
-                border-bottom: none;
-            }
-
-            .notification-card.unread {
-                background-color: #f0f8ff;
-                border-left: 3px solid #0077c8;
-            }
-
-        .notification-icon-large {
-            font-size: 24px;
-            flex-shrink: 0;
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background-color: #e9ecef;
-        }
-
-        .notification-content {
-            flex-grow: 1;
-        }
-
-        .notification-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .notification-desc {
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .notification-time {
-            font-size: 0.8rem;
-            color: #999;
-        }
-
-        .notification-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        .btn-sm {
-            padding: 0.25rem 0.5rem;
-            font-size: 0.875rem;
-        }
-
-        .empty-state {
-            text-align: center;
-            padding: 40px 20px;
-            color: #6c757d;
-        }
-
-            .empty-state i {
-                font-size: 48px;
-                margin-bottom: 15px;
-                color: #dee2e6;
-            }
-
-        .filter-bar {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-
-        .filter-btn {
-            background: white;
-            border: 1px solid #dee2e6;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-            .filter-btn.active {
-                background: #0077c8;
-                color: white;
-                border-color: #0077c8;
-            }
-
-            .filter-btn:hover:not(.active) {
-                background: #f8f9fa;
-            }
-    </style>
-
-<!-- Modal de notificações -->
-<div class="modal-overlay" id="notifOverlay">
-    <div class="modal-box">
-        <div class="modal-header">
-            <h3>Notificações</h3>
-            <button class="close-btn" id="closeNotifications">×</button>
-        </div>
-
-        <div class="modal-content">
-            <div class="notif-item">
-                <div class="icon"><i class="bi bi-check-circle-fill text-success"></i></div>
-                <div class="notif-content">
-                    <div class="notif-title">Confirmação do Prefeito</div>
-                    <div class="notif-desc">Evento: Apresentação SEPLAN</div>
-                    <div class="notif-time">Há 2 horas</div>
-                </div>
-            </div>
-
-            <div class="notif-item">
-                <div class="icon"><i class="bi bi-check-circle-fill text-success"></i></div>
-                <div class="notif-content">
-                    <div class="notif-title">Confirmação do Prefeito</div>
-                    <div class="notif-desc">Evento: Reunião Sefin</div>
-                    <div class="notif-time">Há 4 horas</div>
-                </div>
-            </div>
-
-            <div class="notif-item">
-                <div class="icon"><i class="bi bi-info-circle-fill text-primary"></i></div>
-                <div class="notif-content">
-                    <div class="notif-title">Novo evento agendado</div>
-                    <div class="notif-desc">Visita técnica ao Porto de Santos</div>
-                    <div class="notif-time">Ontem</div>
-                </div>
-            </div>
-
-            <div class="view-all">
-                <a href="notificacoes.html">ver todas</a>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- Página de notificações completa -->
 <main class="col-md-10 mx-auto col-lg-10 px-md-4 form-section">
 
     <div class="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom bg-light">
         <h1 class="h3 mb-0 text-dark">Notificações</h1>
-        <buton type="button" class="btn btn-outline-primary">
+        <button type="button" class="btn btn-outline-primary" onclick="window.history.back()">
             <i class="bi bi-arrow-left me-2"></i>Voltar
-        </buton>
+        </button>
     </div>
 
-        <div class="filter-bar">
-            <button class="filter-btn active" data-filter="all">Todas</button>
-            <button class="filter-btn" data-filter="unread">Não lidas</button>
-            <button class="filter-btn" data-filter="events">Eventos</button>
-            <button class="filter-btn" data-filter="system">Sistema</button>
+
+    <div class="filter-bar">
+        <button class="filter-btn active" data-filter="all">Todas</button>
+        <button class="filter-btn" data-filter="unread">Não lidas</button>
+        <button class="filter-btn" data-filter="events">Eventos</button>
+        <button class="filter-btn" data-filter="system">Sistema</button>
+    </div>
+
+    <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+            <span class="notification-count" id="unreadCount">3 não lidas</span>
         </div>
-        <div class="d-flex align-items-center">
-            <span class="me-3">3 não lidas</span>
-            <button class="btn btn-outline-primary btn-sm" id="markAllRead">
-                <i class="bi bi-check-all me-1"></i> Marcar todas como lidas
-            </button>
-        </div>
+        <button class="btn btn-outline-primary btn-sm" id="markAllRead">
+            <i class="bi bi-check-all me-1"></i> Marcar todas como lidas
+        </button>
+    </div>
 
-        <div class="notifications-list">
-            <!-- Notificação 1 -->
-            <div class="notification-card unread" data-category="events">
-                <div class="notification-icon-large">
-                    <i class="bi bi-check-circle-fill text-success"></i>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-title">Confirmação do Prefeito</div>
-                    <div class="notification-desc">O Prefeito confirmou presença no evento "Apresentação SEPLAN" agendado para 15 de outubro às 14:00.</div>
-                    <div class="notification-time">Há 2 horas</div>
-                    <div class="notification-actions">
-                        <button class="btn btn-primary btn-sm">Ver detalhes</button>
-                        <button class="btn btn-outline-secondary btn-sm mark-read">Marcar como lida</button>
-                    </div>
-                </div>
+    <div class="notifications-list">
+        <!-- Notificação 1 - EVENTO CONFIRMADO -->
+        <div class="notification-card unread" data-category="events">
+            <div class="notification-icon-large">
+                <i class="bi bi-check-circle-fill text-success"></i>
             </div>
-
-            <!-- Notificação 2 -->
-            <div class="notification-card unread" data-category="events">
-                <div class="notification-icon">
-                    <i class="bi bi-check-circle-fill text-success"></i>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-title">Confirmação do Prefeito</div>
-                    <div class="notification-desc">O Prefeito confirmou presença no evento "Reunião Sefin" agendado para 18 de outubro às 10:00.</div>
-                    <div class="notification-time">Há 4 horas</div>
-                    <div class="notification-actions">
-                        <button class="btn btn-primary btn-sm">Ver detalhes</button>
-                        <button class="btn btn-outline-secondary btn-sm mark-read">Marcar como lida</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notificação 3 -->
-            <div class="notification-card" data-category="events">
-                <div class="notification-icon-large">
-                    <i class="bi bi-info-circle-fill text-primary"></i>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-title">Novo evento agendado</div>
-                    <div class="notification-desc">Foi agendada uma visita técnica ao Porto de Santos para o dia 22 de outubro às 09:00.</div>
-                    <div class="notification-time">Ontem</div>
-                    <div class="notification-actions">
-                        <button class="btn btn-primary btn-sm">Ver detalhes</button>
-                        <button class="btn btn-outline-secondary btn-sm">Marcar como lida</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notificação 4 -->
-            <div class="notification-card" data-category="system">
-                <div class="notification-icon-large">
-                    <i class="bi bi-exclamation-triangle-fill text-warning"></i>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-title">Atualização do sistema</div>
-                    <div class="notification-desc">Uma nova atualização do sistema será aplicada no sábado, 19 de outubro, das 02:00 às 04:00.</div>
-                    <div class="notification-time">2 dias atrás</div>
-                    <div class="notification-actions">
-                        <button class="btn btn-primary btn-sm">Ver detalhes</button>
-                        <button class="btn btn-outline-secondary btn-sm">Marcar como lida</button>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notificação 5 -->
-            <div class="notification-card" data-category="events">
-                <div class="notification-icon-large">
-                    <i class="bi bi-calendar-event text-info"></i>
-                </div>
-                <div class="notification-content">
-                    <div class="notification-title">Lembrete de evento</div>
-                    <div class="notification-desc">Reunião com a equipe de comunicação amanhã às 15:00 na sala de reuniões 3.</div>
-                    <div class="notification-time">3 dias atrás</div>
-                    <div class="notification-actions">
-                        <button class="btn btn-primary btn-sm">Ver detalhes</button>
-                        <button class="btn btn-outline-secondary btn-sm">Marcar como lida</button>
-                    </div>
+            <div class="notification-content">
+                <div class="notification-title">Confirmação do Prefeito</div>
+                <div class="notification-desc">O Prefeito confirmou presença no evento <strong>"Apresentação SEPLAN"</strong> agendado para 15 de outubro às 14:00 no Auditório Principal.</div>
+                <div class="notification-time">Há 2 horas</div>
+                <div class="notification-actions">
+                    <button class="btn btn-primary btn-sm">Ver detalhes do evento</button>
+                    <button class="btn btn-outline-secondary btn-sm mark-read">Marcar como lida</button>
                 </div>
             </div>
         </div>
+
+        <!-- Notificação 2 - EVENTO CONFIRMADO -->
+        <div class="notification-card unread" data-category="events">
+            <div class="notification-icon-large">
+                <i class="bi bi-check-circle-fill text-success"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">Confirmação do Prefeito</div>
+                <div class="notification-desc">O Prefeito confirmou presença no evento <strong>"Reunião Sefin"</strong> agendado para 18 de outubro às 10:00 na Sala de Reuniões 1.</div>
+                <div class="notification-time">Há 4 horas</div>
+                <div class="notification-actions">
+                    <button class="btn btn-primary btn-sm">Ver detalhes do evento</button>
+                    <button class="btn btn-outline-secondary btn-sm mark-read">Marcar como lida</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notificação 3 - NOVO EVENTO -->
+        <div class="notification-card" data-category="events">
+            <div class="notification-icon-large">
+                <i class="bi bi-info-circle-fill text-primary"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">Novo evento agendado</div>
+                <div class="notification-desc">Foi agendada uma <strong>visita técnica ao Porto de Santos</strong> para o dia 22 de outubro às 09:00. Confira os detalhes.</div>
+                <div class="notification-time">Ontem</div>
+                <div class="notification-actions">
+                    <button class="btn btn-primary btn-sm">Ver detalhes do evento</button>
+                    <button class="btn btn-outline-secondary btn-sm mark-read">Marcar como lida</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notificação 4 - ATUALIZAÇÃO DO SISTEMA -->
+        <div class="notification-card" data-category="system">
+            <div class="notification-icon-large">
+                <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">Atualização do sistema</div>
+                <div class="notification-desc">Uma nova atualização do sistema será aplicada no sábado, 19 de outubro, das 02:00 às 04:00. O sistema ficará indisponível durante este período.</div>
+                <div class="notification-time">2 dias atrás</div>
+                <div class="notification-actions">
+                    <button class="btn btn-primary btn-sm">Ver detalhes</button>
+                    <button class="btn btn-outline-secondary btn-sm mark-read">Marcar como lida</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notificação 5 - LEMBRETE DE EVENTO -->
+        <div class="notification-card" data-category="events">
+            <div class="notification-icon-large">
+                <i class="bi bi-calendar-event text-info"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">Lembrete de evento</div>
+                <div class="notification-desc"><strong>Reunião com a equipe de comunicação</strong> amanhã às 15:00 na sala de reuniões 3. Não se esqueça!</div>
+                <div class="notification-time">3 dias atrás</div>
+                <div class="notification-actions">
+                    <button class="btn btn-primary btn-sm">Ver detalhes do evento</button>
+                    <button class="btn btn-outline-secondary btn-sm mark-read">Marcar como lida</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notificação 6 - EVENTO CANCELADO -->
+        <div class="notification-card" data-category="events">
+            <div class="notification-icon-large">
+                <i class="bi bi-x-circle-fill text-danger"></i>
+            </div>
+            <div class="notification-content">
+                <div class="notification-title">Evento cancelado</div>
+                <div class="notification-desc">O evento <strong>"Workshop de Inovação"</strong> previsto para 25 de outubro foi cancelado. Mais informações em breve.</div>
+                <div class="notification-time">5 dias atrás</div>
+                <div class="notification-actions">
+                    <button class="btn btn-primary btn-sm">Ver detalhes</button>
+                    <button class="btn btn-outline-secondary btn-sm mark-read">Marcar como lida</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
-<script>
-     // Funcionalidade do modal de notificações
-    const openBtn = document.getElementById("openNotifications");
-    const closeBtn = document.getElementById("closeNotifications");
-    const overlay = document.getElementById("notifOverlay");
 
-    // Abrir modal
-    if (openBtn) {
-        openBtn.addEventListener("click", () => {
-            overlay.style.display = "flex";
-        });
-    }
-
-    // Fechar modal
-    if (closeBtn) {
-        closeBtn.addEventListener("click", () => {
-            overlay.style.display = "none";
-        });
-    }
-
-    // Fechar clicando fora
-    if (overlay) {
-        overlay.addEventListener("click", (e) => {
-            if (e.target === overlay) {
-                overlay.style.display = "none";
-            }
-        });
-    }
-</script>
+@section Scripts {
     <script>
-  
-
-        // Funcionalidade da página de notificações
+        // SCRIPT ESPECÍFICO DA PÁGINA DE NOTIFICAÇÕES
         document.addEventListener('DOMContentLoaded', function() {
             // Filtros
             const filterButtons = document.querySelectorAll('.filter-btn');
@@ -518,10 +326,20 @@
             // Função para atualizar contador de não lidas
             function updateUnreadCount() {
                 const unreadCount = document.querySelectorAll('.notification-card.unread').length;
-                const countElement = document.querySelector('.page-header span');
+                const countElement = document.getElementById('unreadCount');
                 if (countElement) {
-                    countElement.textContent = `${unreadCount} não lidas`;
+                    if (unreadCount === 0) {
+                        countElement.textContent = 'Todas lidas';
+                        countElement.style.background = '#28a745';
+                    } else {
+                        countElement.textContent = `${unreadCount} não lida${unreadCount > 1 ? 's' : ''}`;
+                        countElement.style.background = '#0077c8';
+                    }
                 }
             }
+
+            // Inicializar contador
+            updateUnreadCount();
         });
     </script>
+}

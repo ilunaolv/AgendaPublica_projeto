@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
     <link rel="stylesheet" href="~/css/_default.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/WebApplication1.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <!-- Header -->
@@ -27,10 +28,102 @@
         </main>
     </div>
 
-
     <!-- Footer -->
     @Html.Partial("PartialViews/_Footer")
 
+    <!-- MODAL DE NOTIFICAÇÕES - AGORA NO LAYOUT -->
+    <div class="modal-overlay" id="notifOverlay" style="display: none;">
+        <div class="modal-box">
+            <div class="modal-header">
+                <i class="bi bi-bell-fill"></i>  <h3 class="text-lg-start">Notificações</h3>
+                <button class="close-btn" id="closeNotifications">×</button>
+            </div>
+
+            <div class="modal-content">
+                <div class="notif-item">
+                    <div class="icon"><i class="bi bi-check-circle-fill text-success"></i></div>
+                    <div class="notif-content">
+                        <div class="notif-title">Confirmação do Prefeito</div>
+                        <div class="notif-desc">Evento: Apresentação SEPLAN</div>
+                        <div class="notif-time">Há 2 horas</div>
+                    </div>
+                </div>
+
+                <div class="notif-item">
+                    <div class="icon"><i class="bi bi-check-circle-fill text-success"></i></div>
+                    <div class="notif-content">
+                        <div class="notif-title">Confirmação do Prefeito</div>
+                        <div class="notif-desc">Evento: Reunião Sefin</div>
+                        <div class="notif-time">Há 4 horas</div>
+                    </div>
+                </div>
+
+                <div class="notif-item">
+                    <div class="icon"><i class="bi bi-info-circle-fill text-primary"></i></div>
+                    <div class="notif-content">
+                        <div class="notif-title">Novo evento agendado</div>
+                        <div class="notif-desc">Visita técnica ao Porto de Santos</div>
+                        <div class="notif-time">Ontem</div>
+                    </div>
+                </div>
+
+                <!-- LINK PARA PÁGINA COMPLETA -->
+                <div class="view-all">
+                    <a asp-controller="Home" asp-action="Notificacoes" id="viewAllNotifications">ver todas</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- SCRIPT DO MODAL - AGORA NO LAYOUT -->
+    <script>
+        // Funcionalidade do modal de notificações - DISPONÍVEL EM TODAS AS PÁGINAS
+        document.addEventListener('DOMContentLoaded', function() {
+            const openBtn = document.getElementById("openNotifications");
+            const closeBtn = document.getElementById("closeNotifications");
+            const overlay = document.getElementById("notifOverlay");
+            const viewAllLink = document.getElementById("viewAllNotifications");
+
+            // Abrir modal ao clicar no sino
+            if (openBtn) {
+                openBtn.addEventListener("click", (e) => {
+                    e.preventDefault();
+                    overlay.style.display = "flex";
+                });
+            }
+
+            // Fechar modal ao clicar no X
+            if (closeBtn) {
+                closeBtn.addEventListener("click", () => {
+                    overlay.style.display = "none";
+                });
+            }
+
+            // Fechar modal ao clicar fora
+            if (overlay) {
+                overlay.addEventListener("click", (e) => {
+                    if (e.target === overlay) {
+                        overlay.style.display = "none";
+                    }
+                });
+            }
+
+            // Fechar modal ao pressionar ESC
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && overlay.style.display === 'flex') {
+                    overlay.style.display = 'none';
+                }
+            });
+
+            // Ao clicar em "ver todas", o modal fecha automaticamente e redireciona
+            if (viewAllLink) {
+                viewAllLink.addEventListener('click', () => {
+                    overlay.style.display = 'none';
+                });
+            }
+        });
+    </script>
     <!-- Bootstrap e scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
