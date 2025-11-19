@@ -8,14 +8,48 @@
 
 :root {
     --cor-principal: #018DCF;
+    --ac-bg-preto: #000;
+    --ac-text-amarelo: #FFD700; /* amarelo alto contraste */
 }
 
 
-/* Configuração Flexbox para o Body */
-html, body {
-    height: 100%;
-    margin: 0;
+.alto-contraste {
+    background-color: var(--ac-bg-preto);
+    color: var(--ac-text-amarelo);
 }
+
+    .alto-contraste .barra-acessibilidade {
+        background-color: var(--ac-text-amarelo) !important;
+        color: var(--ac-text-amarelo) !important;
+    }
+
+    .alto-contraste #sidebar-menu {
+        background-color: var(--ac-bg-preto) !important;
+        color: var(--ac-text-amarelo) !important;
+    }
+
+    .alto-contraste .footer {
+        background-color: var(--ac-text-amarelo) !important;
+        color: var(--ac-bg-preto) !important;
+    }
+
+    .alto-contraste .text-gray-800 {
+        color: var(--ac-text-amarelo) !important;
+    }
+
+    .alto-contraste a.nav-link.active {
+        background-color: var(--ac-text-amarelo) !important;
+        color: var(--ac-bg-preto)!important;
+    }
+
+    .alto-contraste .text-dark {
+        color: #fff !important;
+    }
+    /* Configuração Flexbox para o Body */
+    html, body {
+        height: 100%;
+        margin: 0;
+    }
 
 body {
     display: flex; /* Habilita o Flexbox */
