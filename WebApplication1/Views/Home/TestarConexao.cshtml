@@ -1,0 +1,137 @@
+﻿@{
+    ViewData["Title"] = "Testar Conexão com Banco";
+}
+
+<div class="container mt-4">
+    <h2>Teste de Conexão com Banco de Dados</h2>
+
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger">
+            <h4>Erro:</h4>
+            <p>@ViewBag.Error</p>
+            <details>
+                <summary>Detalhes técnicos</summary>
+                <pre>@ViewBag.StackTrace</pre>
+            </details>
+        </div>
+    }
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5>Connection String</h5>
+        </div>
+        <div class="card-body">
+            <code>@ViewBag.ConnectionString</code>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5>Status da Conexão: @ViewBag.ConexaoStatus</h5>
+        </div>
+        <div class="card-body">
+            <p><strong>Servidor:</strong> @ViewBag.Server</p>
+            <p><strong>Banco:</strong> @ViewBag.Database</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Secretarias (@ViewBag.SecretariasCount)</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Secretarias != null && ViewBag.Secretarias.Count > 0)
+                    {
+                        <ul>
+                            @foreach (var item in ViewBag.Secretarias)
+                            {
+                                <li>@item.Text (ID: @item.Value)</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-danger">Nenhuma secretaria encontrada!</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Tipos de Evento (@ViewBag.TiposEventoCount)</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.TiposEvento != null && ViewBag.TiposEvento.Count > 0)
+                    {
+                        <ul>
+                            @foreach (var item in ViewBag.TiposEvento)
+                            {
+                                <li>@item.Text (ID: @item.Value)</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-danger">Nenhum tipo de evento encontrado!</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mt-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Níveis de Prioridade (@ViewBag.NiveisPrioridadeCount)</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.NiveisPrioridade != null && ViewBag.NiveisPrioridade.Count > 0)
+                    {
+                        <ul>
+                            @foreach (var item in ViewBag.NiveisPrioridade)
+                            {
+                                <li>@item.Text (ID: @item.Value)</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-danger">Nenhum nível de prioridade encontrado!</p>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6 mt-3">
+            <div class="card">
+                <div class="card-header">
+                    <h5>Bairros (@ViewBag.BairrosCount)</h5>
+                </div>
+                <div class="card-body">
+                    @if (ViewBag.Bairros != null && ViewBag.Bairros.Count > 0)
+                    {
+                        <ul>
+                            @foreach (var item in ViewBag.Bairros)
+                            {
+                                <li>@item.Text</li>
+                            }
+                        </ul>
+                    }
+                    else
+                    {
+                        <p class="text-danger">Nenhum bairro encontrado!</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a asp-action="Criar" class="btn btn-primary">Voltar para Criar Evento</a>
+        <a href="javascript:location.reload()" class="btn btn-secondary">Recarregar Teste</a>
+    </div>
+</div>

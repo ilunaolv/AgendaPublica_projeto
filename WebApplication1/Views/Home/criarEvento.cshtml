@@ -1,5 +1,9 @@
-﻿<style>
+﻿@model WebApplication1.Models.EventoViewModel
+@{
+    ViewData["Title"] = "Criar Novo Evento";
+}
 
+<style>
     /* Header */
     .modal-header {
         background: none;
@@ -20,787 +24,591 @@
         min-height: 600px;
         overflow-y: auto;
     }
+
+    /* Estilos personalizados */
+    .upload-area {
+        border: 1px dashed #f8f9fa;
+        border-radius: 8px;
+        padding: 40px 20px;
+        text-align: center;
+        background-color: #f8f9fa;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+        .upload-area:hover {
+            border-color: #ccc;
+            background-color: #f0f8ff;
+        }
+
+    .form-section {
+        background-color: #fff;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 25px;
+        border: 1px solid #e0e0e0;
+    }
+
+    .section-title {
+        color: #333;
+        border-bottom: 2px solid #ccc;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-size: 1.25rem;
+    }
+
+    .field-validation-error {
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
 </style>
 
-<!-- Conteúdo Principal -->
+<!-- Mensagem de sucesso -->
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Sucesso"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
 
-<main class="col-md-10 mx-auto col-lg-10 px-md-4 form-section">
+<!-- Modal para cortar imagem -->
+<div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="cropModalLabel">Ajustar e Cortar Banner</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="img-container" style="max-height: 400px; overflow: hidden;">
+                    <img id="imageToCrop" src="" alt="Imagem para Cortar" style="max-width: 100%;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="cropButton">Cortar e Salvar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4 p-3 border-bottom bg-light">
-        <h1 class="h3 mb-0 text-dark">Cadastrar Evento</h1>
-        <button type="button" class="btn btn-outline-primary" onclick="window.history.back()">
-            <i class="bi bi-arrow-left me-2"></i>Voltar
-        </button>
+<!-- Formulário Principal -->
+<form asp-action="Criar" method="post" enctype="multipart/form-data" id="eventoForm">
+    @Html.AntiForgeryToken()
+
+  
+    <!-- Banner do Evento -->
+    <div class="form-section">
+        <h3 class="section-title"> <i class="bi bi-images"></i> Banner do evento</h3>
+
+        <div id="bannerPreviewContainer" class="mb-3" style="display: none;">
+            <img id="bannerPreview" class="img-fluid rounded shadow" style="max-height: 250px; width: 100%; object-fit: cover;" alt="Preview do Banner">
+            <button id="removeBannerBtn" type="button" class="btn btn-sm btn-outline-danger mt-2">Remover Banner</button>
+            <input type="hidden" id="bannerBase64" asp-for="BannerBase64" />
+        </div>
+
+        <div class="upload-area mb-3" id="uploadArea">
+            <div id="uploadContent">
+                <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
+                <h5>Arraste e solte o banner aqui</h5>
+                <p class="text-muted">ou clique para selecionar o arquivo</p>
+            </div>
+            <input type="file" class="d-none" id="bannerUpload" accept="image/*">
+            <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('bannerUpload').click()">
+                Selecionar Arquivo
+            </button>
+        </div>
     </div>
 
-    <form>
-        <div class="modal fade" id="cropModal" tabindex="-1" aria-labelledby="cropModalLabel" aria-hidden="true">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="cropModalLabel">Ajustar e Cortar Banner</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="img-container" style="max-height: 400px; overflow: hidden;">
-                            <img id="imageToCrop" src="" alt="Imagem para Cortar" style="max-width: 100%;">
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                        <button type="button" class="btn btn-primary" id="cropButton">Cortar e Salvar</button>
-                    </div>
-                </div>
+    <!-- Informações Gerais -->
+    <div class="form-section">
+        <h3 class="section-title"> <i class="bi bi-pencil-square"></i> Informações gerais do evento</h3>
+
+        <!-- Título do Evento -->
+        <div class="row">
+            <div class="col mb-4">
+                <label asp-for="Titulo" class="form-label fw-bold">Nome do evento *</label>
+                <input asp-for="Titulo" type="text" class="form-control" placeholder="Digite o nome do evento">
+                <span asp-validation-for="Titulo" class="text-danger"></span>
             </div>
         </div>
 
-        <!-- Banner do Evento -->
-
-        <div class="form-section">
-            <h3 class="section-title"> <i class="bi bi-images"></i> Banner do evento</h3>
-
-            <div id="bannerPreviewContainer" class="mb-3" style="display: none;">
-                <img id="bannerPreview" class="img-fluid rounded shadow" style="max-height: 250px; width: 100%; object-fit: cover;" alt="Preview do Banner">
-                <button id="removeBannerBtn" type="button" class="btn btn-sm btn-outline-danger mt-2">Remover Banner</button>
+        <!-- Prioridade e Secretaria -->
+        <div class="row row-cols-1 row-cols-lg-2">
+            <!-- Nível de Prioridade -->
+            <div class="col mb-4">
+                <label asp-for="CdNivelPrioridade" class="form-label fw-bold">Nível de prioridade *</label>
+                <select asp-for="CdNivelPrioridade" asp-items="ViewBag.NiveisPrioridade" class="form-select">
+                    <option value="">Selecione...</option>
+                </select>
+                <span asp-validation-for="CdNivelPrioridade" class="text-danger"></span>
             </div>
 
-            <div class="upload-area mb-3">
-                <div id="uploadContent">
-                    <i class="fas fa-cloud-upload-alt fa-2x text-muted mb-2"></i>
-                    <h5>Arraste e solte o banner aqui</h5>
-                    <p class="text-muted">ou clique para selecionar o arquivo</p>
-                </div>
-                <input type="file" class="d-none" id="bannerUpload" accept="image/*">
-                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('bannerUpload').click()">
-                    Selecionar Arquivo
-                </button>
-            </div>
-
-            <div class="row">
+            <div class="col mb-4">
+                <label asp-for="CdSecretaria" class="form-label fw-bold">Secretaria responsável *</label>
+                <select asp-for="CdSecretaria" asp-items="ViewBag.Secretarias" class="form-select">
+                    <option value="">Selecione...</option>
+                </select>
+                <span asp-validation-for="CdSecretaria" class="text-danger"></span>
             </div>
         </div>
-
-        <!-- Informações Gerais -->
-        <div class="form-section">
-            <h3 class="section-title"> <i class="bi bi-pencil-square"></i> Informações gerais do evento</h3>
-            <div class="row">
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Nome do evento</label>
-                    <input type="text" class="form-control" value="Maratona Praia Grande 2025 - Correndo pela Saúde e Solidariedade">
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-
-                    <label class="form-label fw-bold">Nível de prioridade</label>
-                    <div class="d-flex gap-4">
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="prioridade" id="normal">
-                            <label class="form-check-label" for="normal">Normal</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="prioridade" id="alta">
-                            <label class="form-check-label" for="alta">Alta</label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="radio" name="prioridade" id="inadiavel">
-                            <label class="form-check-label" for="inadiavel">Inadiável</label>
-                        </div>
+        <!-- Visualização e Tipo de Evento -->
+        <div class="row row-cols-1 row-cols-lg-2">
+            <!-- Visualização do evento -->
+            <div class="col mb-4">
+                <label asp-for="VisualizacaoInterna" class="form-label fw-bold">Visualização do evento *</label>
+                <div class="d-flex gap-4">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="VisualizacaoInterna" id="visualizacaoPublico" value="false">
+                        <label class="form-check-label" for="visualizacaoPublico">
+                            Público
+                        </label>
                     </div>
-
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" asp-for="VisualizacaoInterna" id="visualizacaoPrivado" value="true" checked>
+                        <label class="form-check-label" for="visualizacaoPrivado">
+                            Privado
+                        </label>
+                    </div>
                 </div>
-                <div class="col mb-4">
-
-                    <label class="form-label fw-bold">Secretaria responsável</label>
-                    <select class="form-select">
-                        <option selected>Selecione...</option>
-                        <option>Secretaria de Planejamento (SEPLAN)</option>
-                        <option>Secretaria de Educação (SEDUC)</option>
-                    </select>
-
-                </div>
+                <small class="text-muted d-block mt-1">
+                    <strong>Público:</strong> visível para todos os usuários<br>
+                    <strong>Privado:</strong> visível apenas para usuários internos do sistema
+                </small>
+                <span asp-validation-for="VisualizacaoInterna" class="text-danger"></span>
             </div>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Visualização do evento</label>
-                    <select class="form-select">
-                        <option selected>Selecione...</option>
-                        <option>Publico</option>
-                        <option>Privado</option>
-                    </select>
-                </div>
 
-
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Tipo de evento</label>
-                    <select class="form-select">
-                        <option selected>Selecione...</option>
-                        <option>Evento cultural</option>
-                        <option>Palestra</option>
-                        <option>Workshop</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row">
-                <div class="mb-3">
-                    <label class="form-label fw-bold">Descrição</label>
-                    <textarea class="form-control" rows="6">
-                    A Maratona Praia Grande 2025 é uma ação esportiva e solidária organizada pela Secretaria de Esportes e Laser, com o objetivo de incentivar práticas saudáveis e promover integração entre os munícipes.  
-                    Durante o percurso, haverá pontos de apoio, ambulância, hidratação e ações de conscientização sobre saúde e sustentabilidade.  
-
-                    O evento será acompanhado por equipes das secretarias de Saúde, Trânsito e Turismo, garantindo segurança e suporte aos participantes.
-                    </textarea>
-                </div>
+            <!-- Tipo de evento -->
+            <div class="col mb-4">
+                <label asp-for="CdTipoEvento" class="form-label fw-bold">Tipo de evento *</label>
+                <select asp-for="CdTipoEvento" asp-items="ViewBag.TiposEvento" class="form-select">
+                    <option value="">Selecione...</option>
+                </select>
+                <span asp-validation-for="CdTipoEvento" class="text-danger"></span>
             </div>
         </div>
-        <!-- Programação do evento -->
-        <div class="form-section">
-            <h3 class="section-title"><i class="bi bi-calendar-week"></i> Programação do evento</h3>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Data e Hora de Início</label>
-                    <input type="datetime-local" class="form-control" id="dataHoraInicio">
-                </div>
-                <div class="col mb-4">
-                    <label class="form-label fw-bold">Data e Hora de Término</label>
-                    <input type="datetime-local" class="form-control" id="dataHoraTermino">
-                </div>
+
+        <!-- Descrição -->
+        <div class="row">
+            <div class="mb-3">
+                <label asp-for="Descricao" class="form-label fw-bold">Descrição</label>
+                <textarea asp-for="Descricao" class="form-control" rows="6" placeholder="Descreva o evento..."></textarea>
+                <span asp-validation-for="Descricao" class="text-danger"></span>
             </div>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-                    <label for="cep" class="form-label fw-bold">CEP</label>
+        </div>
+    </div>
+
+    <!-- Programação do evento -->
+    <div class="form-section">
+        <h3 class="section-title"><i class="bi bi-calendar-week"></i> Programação do evento</h3>
+
+        <!-- Datas -->
+        <div class="row row-cols-1 row-cols-lg-2">
+            <div class="col mb-4">
+                <label asp-for="DataInicio" class="form-label fw-bold">Data e Hora de Início *</label>
+                <input asp-for="DataInicio" type="datetime-local" class="form-control">
+                <span asp-validation-for="DataInicio" class="text-danger"></span>
+            </div>
+            <div class="col mb-4">
+                <label asp-for="DataFim" class="form-label fw-bold">Data e Hora de Término *</label>
+                <input asp-for="DataFim" type="datetime-local" class="form-control">
+                <span asp-validation-for="DataFim" class="text-danger"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Endereço do Evento -->
+    <div class="form-section">
+        <h3 class="section-title"><i class="bi bi-geo-alt"></i> Localização do Evento</h3>
+
+        <!-- CEP e Endereço -->
+        <div class="row row-cols-1 row-cols-lg-2">
+            <div class="col mb-4">
+                <label asp-for="Endereco.Cep" class="form-label fw-bold">CEP</label>
+                <div class="input-group">
+                    <input asp-for="Endereco.Cep" type="text" class="form-control" placeholder="Digite o CEP" id="cepInput">
+                    <button class="btn btn-outline-primary" type="button" id="btnBuscarCEP" title="Buscar CEP">
+                        <i class="bi bi-search"></i>
+                    </button>
+                </div>
+                <span asp-validation-for="Endereco.Cep" class="text-danger"></span>
+            </div>
+            <div class="col mb-4">
+                <label asp-for="Endereco.Endereco" class="form-label fw-bold">Endereço</label>
+                <input asp-for="Endereco.Endereco" type="text" class="form-control" placeholder="Rua, avenida, etc." id="enderecoInput">
+                <span asp-validation-for="Endereco.Endereco" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Número e Bairro -->
+        <div class="row row-cols-1 row-cols-lg-2">
+            <div class="col mb-4">
+                <label asp-for="Endereco.Numero" class="form-label fw-bold">Nº</label>
+                <input asp-for="Endereco.Numero" type="text" class="form-control" id="numeroInput">
+                <span asp-validation-for="Endereco.Numero" class="text-danger"></span>
+            </div>
+            <div class="col mb-4">
+                <label asp-for="Endereco.Bairro" class="form-label fw-bold">Bairro</label>
+                <select asp-for="Endereco.Bairro" asp-items="ViewBag.Bairros" class="form-select" id="bairroSelect">
+                    <option value="">Selecione o bairro</option>
+                </select>
+                <span asp-validation-for="Endereco.Bairro" class="text-danger"></span>
+            </div>
+        </div>
+
+
+        <!-- ADICIONE ESTA LINHA: Complemento -->
+        <div class="row">
+            <div class="col mb-4">
+                <label asp-for="Endereco.Complemento" class="form-label fw-bold">Complemento</label>
+                <input asp-for="Endereco.Complemento" type="text" class="form-control" placeholder="Apartamento, bloco, etc.">
+                <span asp-validation-for="Endereco.Complemento" class="text-danger"></span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Anexo de Documentos -->
+    <div class="form-section" id="document-upload-section">
+        <h3 class="section-title"><i class="bi bi-arrow-bar-up"></i> Anexo de documentos</h3>
+
+        <div class="upload-list">
+            <div class="row upload-group mb-4">
+                <div class="col">
+                    <label class="form-label fw-bold">Upload</label>
                     <div class="input-group">
-                        <input type="text" id="cep" class="form-control" placeholder="Digite o CEP">
-                        <button class="btn btn-outline-primary" type="button" id="btnBuscarCEP" title="Buscar CEP">
-                            <i class="bi bi-search"></i>
-                        </button>
-                    </div>
-                </div>
-                <div class="col mb-4">
-                    <label for="endereco" class="form-label fw-bold">Endereço</label>
-                    <input type="text" id="endereco" class="form-control" placeholder="Rua, avenida, etc.">
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-                    <label for="numero" class="form-label fw-bold">Nº</label>
-                    <input type="text" id="numero" class="form-control">
-                </div>
-                <div class="col mb-4">
-                    <label for="bairro" class="form-label fw-bold">Bairro</label>
-                    <select id="bairro" class="form-select">
-                        <option selected disabled>Selecione o bairro</option>
-                        <option>Boqueirão</option>
-                        <option>Aviação</option>
-                        <option>Caiçara</option>
-                        <option>Guilhermina</option>
-                    </select>
-                </div>
-            </div>
-            <div class="row row-cols-1 row-cols-lg-2">
-                <div class="col mb-4">
-                    <label for="complemento" class="form-label fw-bold">Complemento</label>
-                    <input type="text" id="complemento" class="form-control">
-                </div>
-
-            </div>
-        </div>
-        <!-- Anexo de Documentos -->
-        <div class="form-section" id="document-upload-section">
-            <h3 class="section-title"><i class="bi bi-arrow-bar-up"></i> Anexo de documentos</h3>
-
-            <div class="upload-list">
-                <div class="row upload-group mb-4">
-                    <div class="col">
-                        <label class="form-label fw-bold">Upload</label>
-                        <div class="input-group">
-                            <input type="file" class="form-control" name="arquivo[]" accept=".pdf" aria-label="Selecione o arquivo PDF">
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-6">
-                    <div class="d-flex align-items-start">
-                        <span class="text-primary me-2">•</span>
-                        <span class="text-muted">
-                            Tamanho máximo: 5MB
-                        </span>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="d-flex align-items-start">
-                        <span class="text-primary me-2">•</span>
-                        <span class="text-muted">
-                            Formato permitido: PDF
-                        </span>
+                        <input type="file" class="form-control" name="Documentos" accept=".pdf" multiple>
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="d-flex gap-3 justify-content-end mb-4 p-3 border-bottom bg-light">
-            <button type="button" class="btn btn-outline-secondary">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Cadastrar Evento</button>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="d-flex align-items-start">
+                    <span class="text-primary me-2">•</span>
+                    <span class="text-muted">
+                        Tamanho máximo: 5MB
+                    </span>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex align-items-start">
+                    <span class="text-primary me-2">•</span>
+                    <span class="text-muted">
+                        Formato permitido: PDF
+                    </span>
+                </div>
+            </div>
         </div>
-    </form>
+    </div>
 
+    <!-- Botões de Ação -->
+    <div class="d-flex gap-3 justify-content-end mb-4 p-3 border-bottom bg-light">
+        <button type="button" class="btn btn-outline-secondary" onclick="window.history.back()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Cadastrar Evento</button>
+    </div>
+</form>
 
+@section Scripts {
+    <!-- Scripts de validação -->
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 
-</main>
-
-<!-- JS - AREA DE BANNER-->
-
-<script>
-
+    <!-- JS - AREA DE BANNER -->
+    <script>
         document.addEventListener('DOMContentLoaded', function () {
-        const bannerUpload = document.getElementById('bannerUpload');
-        const bannerPreviewContainer = document.getElementById('bannerPreviewContainer');
-        const bannerPreview = document.getElementById('bannerPreview');
-        const removeBannerBtn = document.getElementById('removeBannerBtn');
-        const uploadContent = document.getElementById('uploadContent');
+            const bannerUpload = document.getElementById('bannerUpload');
+            const bannerPreviewContainer = document.getElementById('bannerPreviewContainer');
+            const bannerPreview = document.getElementById('bannerPreview');
+            const removeBannerBtn = document.getElementById('removeBannerBtn');
+            const uploadArea = document.getElementById('uploadArea');
+            const uploadContent = document.getElementById('uploadContent');
+            const bannerBase64Input = document.getElementById('bannerBase64');
 
-        const imageToCrop = document.getElementById('imageToCrop');
-        const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
-        const cropButton = document.getElementById('cropButton');
+            const imageToCrop = document.getElementById('imageToCrop');
+            const cropModal = new bootstrap.Modal(document.getElementById('cropModal'));
+            const cropButton = document.getElementById('cropButton');
 
-        let cropper; // Variável para armazenar a instância do Cropper
+            let cropper;
 
-        // 1. Ação quando o arquivo é selecionado
-        bannerUpload.addEventListener('change', function (e) {
-            if (e.target.files && e.target.files[0]) {
-                const reader = new FileReader();
-                reader.onload = function (event) {
-                    // Carrega a imagem no modal
-                    imageToCrop.src = event.target.result;
+            // 1. Ação quando o arquivo é selecionado
+            bannerUpload.addEventListener('change', function (e) {
+                if (e.target.files && e.target.files[0]) {
+                    const file = e.target.files[0];
 
-                    // Abre o modal
-                    cropModal.show();
-                };
-                reader.readAsDataURL(e.target.files[0]);
-            }
-        });
-
-        // 2. Inicialização do Cropper quando o Modal é aberto
-        document.getElementById('cropModal').addEventListener('shown.bs.modal', function () {
-            // Opções do Cropper: aspect-ratio define a proporção do corte (ex: 16/9 para banner)
-            cropper = new Cropper(imageToCrop, {
-                aspectRatio: 16 / 9, // Defina a proporção desejada para o banner
-                viewMode: 1, // Restringe a área de corte ao contêiner
-                autoCropArea: 0.9, // Inicia a área de corte em 90%
-            });
-        });
-
-        // 3. Destruição do Cropper quando o Modal é fechado (para evitar erros)
-        document.getElementById('cropModal').addEventListener('hidden.bs.modal', function () {
-            if (cropper) {
-                cropper.destroy();
-                cropper = null;
-            }
-            // Limpa o input file para permitir selecionar o mesmo arquivo novamente
-            bannerUpload.value = null;
-        });
-
-        // 4. Ação de Corte
-        cropButton.addEventListener('click', function () {
-            if (cropper) {
-                // Obtém a imagem cortada como um Data URL (PNG)
-                const croppedCanvas = cropper.getCroppedCanvas({
-                    width: 1200, // Tamanho de largura final (pode ajustar)
-                    height: 675, // Tamanho de altura final (1200 / 16 * 9)
-                });
-
-                const croppedDataUrl = croppedCanvas.toDataURL('image/png');
-
-                // Exibe o resultado no preview da página
-                bannerPreview.src = croppedDataUrl;
-                bannerPreviewContainer.style.display = 'block';
-                uploadContent.style.display = 'none';
-
-                // Fechar o modal
-                cropModal.hide();
-
-                // Opcional: Aqui você enviaria 'croppedDataUrl' para o servidor via AJAX/Fetch
-                // ou armazenaria em um campo hidden do formulário.
-            }
-        });
-
-        // 5. Remover Banner
-        removeBannerBtn.addEventListener('click', function () {
-            bannerPreview.src = '';
-            bannerPreviewContainer.style.display = 'none';
-            uploadContent.style.display = 'block';
-            bannerUpload.value = null; // Limpa o input
-        });
-    });
-</script>
-
-
- <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const fileInput = document.getElementById('bannerUpload');
-        const previewImage = document.getElementById('bannerPreview');
-        const previewContainer = document.getElementById('bannerPreviewContainer');
-        const uploadArea = document.querySelector('.upload-area');
-        const removeButton = document.getElementById('removeBannerBtn');
-
-        // --- 1. Lógica para Exibir o Preview ---
-        fileInput.addEventListener('change', function() {
-            const file = this.files[0];
-
-            if (file) {
-                // Cria um objeto FileReader para ler o arquivo
-                const reader = new FileReader();
-
-                reader.onload = function(e) {
-                    // Define a URL da imagem no elemento <img>
-                    previewImage.src = e.target.result;
-
-                    // Mostra o contêiner de preview e esconde a área de upload inicial
-                    previewContainer.style.display = 'block';
-                    uploadArea.style.display = 'none';
-                };
-
-                // Lê o arquivo como URL de dados (Data URL)
-                reader.readAsDataURL(file);
-            }
-        });
-
-        // --- 2. Lógica para Remover o Preview ---
-        removeButton.addEventListener('click', function() {
-            // Limpa o valor do input (importante para o formulário)
-            fileInput.value = '';
-
-            // Oculta o contêiner de preview e reexibe a área de upload
-            previewContainer.style.display = 'none';
-            uploadArea.style.display = 'block';
-
-            // Remove a fonte da imagem para liberar memória
-            previewImage.src = '';
-        });
-    });
-</script> 
-<!-- JS - AREA DE PROGRAMAÇÃO -->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Mapeamento dos elementos do DOM
-        const cepInput = document.getElementById('cep');
-        const btnBuscarCEP = document.getElementById('btnBuscarCEP');
-        const enderecoInput = document.getElementById('endereco');
-        const bairroSelect = document.getElementById('bairro');
-        const numeroInput = document.getElementById('numero');
-
-        // Função para limpar e desabilitar os campos de endereço
-        function limparCamposEndereco() {
-            enderecoInput.value = "";
-            bairroSelect.value = "Selecione o bairro"; // Ou define para o placeholder
-            // numeroInput.value = ""; // O número geralmente não é limpo
-
-            // Opcional: Desabilitar campos enquanto busca
-            // enderecoInput.disabled = true;
-            // bairroSelect.disabled = true;
-        }
-
-        // Função principal para buscar o CEP
-        async function buscarCEP() {
-            let cep = cepInput.value.replace(/\D/g, ''); // Remove caracteres não numéricos
-
-            // Verifica se o CEP tem o tamanho correto (8 dígitos)
-            if (cep.length !== 8) {
-                if (cep.length > 0) {
-                    alert('CEP inválido! O CEP deve ter 8 dígitos.');
-                }
-                limparCamposEndereco();
-                return;
-            }
-
-            limparCamposEndereco();
-
-            // URL da API ViaCEP
-            const url = `https://viacep.com.br/ws/${cep}/json/`;
-
-            try {
-                const response = await fetch(url);
-                const data = await response.json();
-
-                if (data.erro) {
-                    alert('CEP não encontrado. Por favor, verifique o número digitado.');
-                } else {
-                    // Preenche o endereço
-                    enderecoInput.value = data.logradouro || '';
-
-                    // Preenche o bairro se ele existir nas opções do <select>
-                    preencherBairro(data.bairro);
-
-                    // Move o foco para o campo 'Número'
-                    numeroInput.focus();
-                }
-            } catch (error) {
-                console.error('Erro ao buscar o CEP:', error);
-                alert('Erro na comunicação com o serviço de busca de CEP.');
-            }
-        }
-
-        // Função para preencher o <select> do bairro
-        function preencherBairro(bairroEncontrado) {
-            const options = Array.from(bairroSelect.options);
-            let bairroExiste = false;
-
-            options.forEach(option => {
-                if (option.text.toLowerCase() === bairroEncontrado.toLowerCase()) {
-                    bairroSelect.value = option.value;
-                    bairroExiste = true;
-                }
-            });
-
-            // Se o bairro não estiver na sua lista de opções, pode ser exibido no console.
-            if (!bairroExiste && bairroEncontrado) {
-                console.warn(`Bairro "${bairroEncontrado}" encontrado, mas não está na sua lista de opções.`);
-                // Opcional: Você pode adicionar a opção dinamicamente se quiser
-                // const newOption = new Option(bairroEncontrado, bairroEncontrado, true, true);
-                // bairroSelect.appendChild(newOption);
-            }
-        }
-
-        // --- Event Listeners ---
-
-        // 1. Ao clicar no botão de busca
-        btnBuscarCEP.addEventListener('click', buscarCEP);
-
-        // 2. Ao sair do campo CEP (blur)
-        cepInput.addEventListener('blur', buscarCEP);
-
-        // Opcional: Formatação de máscara do CEP
-        cepInput.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, ''); // Remove não dígitos
-            if (value.length > 5) {
-                value = value.substring(0, 5) + '-' + value.substring(5, 8);
-            }
-            e.target.value = value;
-        });
-    });
-</script>
-
-<!-- JS - AREA DE ANEXO DE DOCUMENTOS-->
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const uploadSection = document.getElementById('document-upload-section');
-        const uploadList = uploadSection.querySelector('.upload-list');
-        const originalUploadGroup = uploadList.querySelector('.upload-group');
-
-        // Função para atualizar os botões em todos os campos
-        function updateControls() {
-            const allUploadGroups = uploadList.querySelectorAll('.upload-group');
-            const lastIndex = allUploadGroups.length - 1;
-
-            allUploadGroups.forEach((group, index) => {
-                const inputGroup = group.querySelector('.input-group');
-                // Remove todos os botões existentes antes de recolocar
-                inputGroup.querySelectorAll('button').forEach(btn => btn.remove());
-
-                // 1. Adiciona o botão de REMOVER em TODOS os campos
-                const removeButton = document.createElement('button');
-                removeButton.className = 'btn btn-danger';
-                removeButton.type = 'button';
-                removeButton.title = 'Remover arquivo';
-                removeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
-
-                // Adiciona o listener de remover
-                removeButton.addEventListener('click', function() {
-                    group.remove();
-                    // Se o campo removido era o único, chamamos a função para garantir que
-                    // a lista não fique completamente vazia, inserindo um campo novo e limpo.
-                    if (uploadList.querySelectorAll('.upload-group').length === 0) {
-                        addFileUploadField(false); // Adiciona um campo, mas não chama updateControls de novo
+                    // Verificar tamanho do arquivo (max 5MB)
+                    if (file.size > 5 * 1024 * 1024) {
+                        alert('O arquivo é muito grande. Tamanho máximo: 5MB');
+                        bannerUpload.value = '';
+                        return;
                     }
-                    updateControls(); // Atualiza os controles nos campos restantes
+
+                    const reader = new FileReader();
+                    reader.onload = function (event) {
+                        imageToCrop.src = event.target.result;
+                        cropModal.show();
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // 2. Inicialização do Cropper
+            document.getElementById('cropModal').addEventListener('shown.bs.modal', function () {
+                cropper = new Cropper(imageToCrop, {
+                    aspectRatio: 16 / 9,
+                    viewMode: 1,
+                    autoCropArea: 0.9,
+                });
+            });
+
+            // 3. Destruição do Cropper
+            document.getElementById('cropModal').addEventListener('hidden.bs.modal', function () {
+                if (cropper) {
+                    cropper.destroy();
+                    cropper = null;
+                }
+                bannerUpload.value = '';
+            });
+
+            // 4. Ação de Corte
+            cropButton.addEventListener('click', function () {
+                if (cropper) {
+                    const croppedCanvas = cropper.getCroppedCanvas({
+                        width: 1200,
+                        height: 675,
+                    });
+
+                    const croppedDataUrl = croppedCanvas.toDataURL('image/jpeg', 0.8);
+
+                    // Salva no campo hidden
+                    bannerBase64Input.value = croppedDataUrl;
+
+                    // Exibe preview
+                    bannerPreview.src = croppedDataUrl;
+                    bannerPreviewContainer.style.display = 'block';
+                    uploadArea.style.display = 'none';
+
+                    cropModal.hide();
+                }
+            });
+
+            // 5. Remover Banner
+            removeBannerBtn.addEventListener('click', function () {
+                bannerPreview.src = '';
+                bannerPreviewContainer.style.display = 'none';
+                uploadArea.style.display = 'block';
+                bannerBase64Input.value = '';
+                bannerUpload.value = '';
+            });
+        });
+    </script>
+    
+    <!-- JS - AREA DE PROGRAMAÇÃO (Busca CEP) -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const cepInput = document.getElementById('cepInput');
+            const btnBuscarCEP = document.getElementById('btnBuscarCEP');
+            const enderecoInput = document.getElementById('enderecoInput');
+            const bairroSelect = document.getElementById('bairroSelect');
+            const numeroInput = document.getElementById('numeroInput');
+
+            function limparCamposEndereco() {
+                enderecoInput.value = "";
+                bairroSelect.value = "";
+            }
+
+            async function buscarCEP() {
+                let cep = cepInput.value.replace(/\D/g, '');
+
+                if (cep.length !== 8) {
+                    if (cep.length > 0) {
+                        alert('CEP inválido! O CEP deve ter 8 dígitos.');
+                    }
+                    limparCamposEndereco();
+                    return;
+                }
+
+                limparCamposEndereco();
+
+                const url = `https://viacep.com.br/ws/${cep}/json/`;
+
+                try {
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    if (data.erro) {
+                        alert('CEP não encontrado. Por favor, verifique o número digitado.');
+                    } else {
+                        enderecoInput.value = data.logradouro || '';
+                        preencherBairro(data.bairro);
+                        numeroInput.focus();
+                    }
+                } catch (error) {
+                    console.error('Erro ao buscar o CEP:', error);
+                    alert('Erro na comunicação com o serviço de busca de CEP.');
+                }
+            }
+
+            function preencherBairro(bairroEncontrado) {
+                if (!bairroEncontrado) return;
+
+                const options = Array.from(bairroSelect.options);
+                let bairroExiste = false;
+
+                options.forEach(option => {
+                    if (option.text.toLowerCase() === bairroEncontrado.toLowerCase()) {
+                        bairroSelect.value = option.value;
+                        bairroExiste = true;
+                    }
                 });
 
-                // Anexa o botão de remover
-                inputGroup.appendChild(removeButton);
+                if (!bairroExiste && bairroEncontrado) {
+                    // Adiciona o bairro encontrado como nova opção
+                    const newOption = document.createElement('option');
+                    newOption.value = bairroEncontrado;
+                    newOption.textContent = bairroEncontrado;
+                    bairroSelect.appendChild(newOption);
+                    bairroSelect.value = bairroEncontrado;
+                }
+            }
 
-                // 2. Adiciona o botão de ADICIONAR SOMENTE no ÚLTIMO campo
-                if (index === lastIndex) {
-                    const addButton = document.createElement('button');
-                    addButton.className = 'btn btn-primary';
-                    addButton.type = 'button';
-                    addButton.title = 'Adicionar arquivo';
-                    addButton.innerHTML = '<i class="bi bi-plus-lg"></i>';
+            // Event Listeners
+            btnBuscarCEP.addEventListener('click', buscarCEP);
+            cepInput.addEventListener('blur', buscarCEP);
 
-                    // Adiciona o listener para adicionar um novo campo
-                    addButton.addEventListener('click', addFileUploadField);
+            // Máscara para CEP
+            cepInput.addEventListener('input', function(e) {
+                let value = e.target.value.replace(/\D/g, '');
+                if (value.length > 5) {
+                    value = value.substring(0, 5) + '-' + value.substring(5, 8);
+                }
+                e.target.value = value;
+            });
 
-                    // Anexa o botão de adicionar
-                    inputGroup.insertBefore(addButton, removeButton); // Insere ANTES do remover
+            // Validação de datas
+            const dataInicio = document.getElementById('DataInicio');
+            const dataFim = document.getElementById('DataFim');
+
+            function validarDatas() {
+                if (dataInicio.value && dataFim.value) {
+                    const inicio = new Date(dataInicio.value);
+                    const fim = new Date(dataFim.value);
+
+                    if (fim < inicio) {
+                        alert('A data de término não pode ser anterior à data de início!');
+                        dataFim.value = '';
+                        dataFim.focus();
+                    }
+                }
+            }
+
+            dataInicio.addEventListener('change', function() {
+                if (dataFim.value) {
+                    validarDatas();
                 }
             });
-        }
 
-        // Função para adicionar um novo campo
-        function addFileUploadField() {
-            // Clona a estrutura do primeiro grupo (que está no DOM)
-            const newUploadGroup = originalUploadGroup.cloneNode(true);
+            dataFim.addEventListener('change', validarDatas);
+        });
+    </script>
 
-            // Limpa o input file clonado
-            const fileInput = newUploadGroup.querySelector('input[type="file"]');
-            fileInput.value = '';
+    <!-- JS - AREA DE ANEXO DE DOCUMENTOS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadSection = document.getElementById('document-upload-section');
+            const uploadList = uploadSection.querySelector('.upload-list');
+            const originalUploadGroup = uploadList.querySelector('.upload-group');
 
-            // Insere o novo campo na lista
-            uploadList.appendChild(newUploadGroup);
+            // Função para atualizar os botões em todos os campos
+            function updateControls() {
+                const allUploadGroups = uploadList.querySelectorAll('.upload-group');
+                const lastIndex = allUploadGroups.length - 1;
 
-            // Atualiza os botões de controle de todos os campos
+                allUploadGroups.forEach((group, index) => {
+                    const inputGroup = group.querySelector('.input-group');
+                    // Remove todos os botões existentes antes de recolocar
+                    inputGroup.querySelectorAll('button').forEach(btn => btn.remove());
+
+                    // 1. Adiciona o botão de REMOVER em TODOS os campos
+                    const removeButton = document.createElement('button');
+                    removeButton.className = 'btn btn-danger';
+                    removeButton.type = 'button';
+                    removeButton.title = 'Remover arquivo';
+                    removeButton.innerHTML = '<i class="bi bi-x-lg"></i>';
+
+                    // Adiciona o listener de remover
+                    removeButton.addEventListener('click', function() {
+                        group.remove();
+                        // Se o campo removido era o único, chamamos a função para garantir que
+                        // a lista não fique completamente vazia, inserindo um campo novo e limpo.
+                        if (uploadList.querySelectorAll('.upload-group').length === 0) {
+                            addFileUploadField();
+                        }
+                        updateControls(); // Atualiza os controles nos campos restantes
+                    });
+
+                    // Anexa o botão de remover
+                    inputGroup.appendChild(removeButton);
+
+                    // 2. Adiciona o botão de ADICIONAR SOMENTE no ÚLTIMO campo
+                    if (index === lastIndex) {
+                        const addButton = document.createElement('button');
+                        addButton.className = 'btn btn-primary';
+                        addButton.type = 'button';
+                        addButton.title = 'Adicionar arquivo';
+                        addButton.innerHTML = '<i class="bi bi-plus-lg"></i>';
+
+                        // Adiciona o listener para adicionar um novo campo
+                        addButton.addEventListener('click', addFileUploadField);
+
+                        // Anexa o botão de adicionar
+                        inputGroup.insertBefore(addButton, removeButton); // Insere ANTES do remover
+                    }
+                });
+            }
+
+            // Função para adicionar um novo campo
+            function addFileUploadField() {
+                // Clona a estrutura do primeiro grupo (que está no DOM)
+                const newUploadGroup = originalUploadGroup.cloneNode(true);
+
+                // Limpa o input file clonado
+                const fileInput = newUploadGroup.querySelector('input[type="file"]');
+                fileInput.value = '';
+
+                // Insere o novo campo na lista
+                uploadList.appendChild(newUploadGroup);
+
+                // Atualiza os botões de controle de todos os campos
+                updateControls();
+            }
+
+            // Inicialização
             updateControls();
-        }
+        });
+    </script>
 
-        // --- Inicialização ---
-        // 1. O campo inicial deve ser removível.
-        // 2. O campo inicial deve ter o botão de adicionar.
-        updateControls();
+    <!-- Script para formatação de datas -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Formata as datas para o padrão local
+            const dataInicio = document.getElementById('DataInicio');
+            const dataFim = document.getElementById('DataFim');
 
-        // Caso a lista fique vazia (opcionalidade total), garantimos que um campo base seja sempre visível
-        // para dar o ponto de entrada ao usuário. Se o usuário deletar o único campo, o listener de remoção
-        // irá chamar addFileUploadField(false) para restaurar a UI com 1 campo vazio e configurado.
-    });
-</script>
-<!-- Adicione este script na página de criar eventos (criar-evento.html) -->
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, query, onSnapshot, getDoc, doc, setDoc, updateDoc, deleteDoc, getDocs, orderBy, where, setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    // Configuração do Firebase
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
-
-    let db;
-    let auth;
-    let currentEventId = null;
-    let isEditMode = false;
-
-    // Inicialização do Firebase
-    async function initializeFirebase() {
-        if (!firebaseConfig) return;
-
-        try {
-            const app = initializeApp(firebaseConfig);
-            db = getFirestore(app);
-            auth = getAuth(app);
-
-            await setPersistence(auth, browserLocalPersistence);
-            await signInAnonymously(auth);
-
-            // Verifica se está no modo de edição
-            checkEditMode();
-        } catch (error) {
-            console.error("Erro na inicialização do Firebase:", error);
-        }
-    }
-
-    // Verifica se está no modo de edição
-    function checkEditMode() {
-        const urlParams = new URLSearchParams(window.location.search);
-        const editId = urlParams.get('edit');
-
-        if (editId) {
-            isEditMode = true;
-            currentEventId = editId;
-            document.querySelector('h1').textContent = 'Editar Evento';
-            document.querySelector('button[type="submit"]').textContent = 'Atualizar Evento';
-            loadEventData(editId);
-        }
-    }
-
-    // Carrega os dados do evento para edição
-    async function loadEventData(eventId) {
-        if (!db) return;
-
-        try {
-            const eventDoc = await getDoc(doc(db, `artifacts/${appId}/public/data/events`, eventId));
-
-            if (eventDoc.exists()) {
-                const eventData = eventDoc.data();
-                populateForm(eventData);
-            } else {
-                alert('Evento não encontrado!');
-                window.location.href = 'dashboard.html';
+            if (dataInicio && !dataInicio.value) {
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                dataInicio.value = now.toISOString().slice(0, 16);
             }
-        } catch (error) {
-            console.error('Erro ao carregar evento:', error);
-            alert('Erro ao carregar dados do evento.');
-        }
-    }
 
-    // Preenche o formulário com os dados do evento
-    function populateForm(eventData) {
-        // Informações Gerais
-        document.querySelector('input[type="text"]').value = eventData.nomeEvento || '';
-
-        // Prioridade
-        const priority = eventData.prioridade?.toLowerCase();
-        if (priority) {
-            document.querySelector(`input[name="prioridade"][id="${priority}"]`).checked = true;
-        }
-
-        // Secretaria
-        if (eventData.secretaria) {
-            const secretariaSelect = document.querySelector('select');
-            for (let option of secretariaSelect.options) {
-                if (option.text.includes(eventData.secretaria)) {
-                    secretariaSelect.value = option.value;
-                    break;
-                }
-            }
-        }
-
-        // Tipo de Evento
-        if (eventData.tipoEvento) {
-            const tipoSelect = document.querySelectorAll('select')[1];
-            for (let option of tipoSelect.options) {
-                if (option.text.toLowerCase() === eventData.tipoEvento.toLowerCase()) {
-                    tipoSelect.value = option.value;
-                    break;
-                }
-            }
-        }
-
-        // Categoria
-        if (eventData.categoria) {
-            const categoriaSelect = document.querySelectorAll('select')[2];
-            for (let option of categoriaSelect.options) {
-                if (option.text.toLowerCase() === eventData.categoria.toLowerCase()) {
-                    categoriaSelect.value = option.value;
-                    break;
-                }
-            }
-        }
-
-        // Descrição
-        const textarea = document.querySelector('textarea');
-        if (textarea && eventData.descricao) {
-            textarea.value = eventData.descricao;
-        }
-
-        // Data e Hora
-        if (eventData.dataHoraInicio) {
-            const startDate = eventData.dataHoraInicio.toDate();
-            document.getElementById('dataHoraInicio').value = formatDateTimeLocal(startDate);
-        }
-
-        if (eventData.dataHoraTermino) {
-            const endDate = eventData.dataHoraTermino.toDate();
-            document.getElementById('dataHoraTermino').value = formatDateTimeLocal(endDate);
-        }
-
-        // Localização
-        if (eventData.cep) document.getElementById('cep').value = eventData.cep;
-        if (eventData.endereco) document.getElementById('endereco').value = eventData.endereco;
-        if (eventData.numero) document.getElementById('numero').value = eventData.numero;
-
-        // Bairro
-        if (eventData.bairro) {
-            const bairroSelect = document.getElementById('bairro');
-            for (let option of bairroSelect.options) {
-                if (option.text.toLowerCase() === eventData.bairro.toLowerCase()) {
-                    bairroSelect.value = option.value;
-                    break;
-                }
-            }
-        }
-
-        if (eventData.complemento) document.getElementById('complemento').value = eventData.complemento;
-    }
-
-    // Formata data para o input datetime-local
-    function formatDateTimeLocal(date) {
-        return date.toISOString().slice(0, 16);
-    }
-
-    // Modifica o evento de submit do formulário
-    document.addEventListener('DOMContentLoaded', function() {
-        const form = document.querySelector('form');
-
-        form.addEventListener('submit', async function(e) {
-            e.preventDefault();
-
-            if (isEditMode) {
-                await updateEvent();
-            } else {
-                await createEvent();
+            if (dataFim && !dataFim.value) {
+                const future = new Date();
+                future.setHours(future.getHours() + 2);
+                future.setMinutes(future.getMinutes() - future.getTimezoneOffset());
+                dataFim.value = future.toISOString().slice(0, 16);
             }
         });
-
-        // Botão voltar
-        const backButton = document.querySelector('button[type="button"]');
-        if (backButton) {
-            backButton.addEventListener('click', function() {
-                window.location.href = 'dashboard.html';
-            });
-        }
-
-        initializeFirebase();
-    });
-
-    // Função para criar novo evento
-    async function createEvent() {
-        if (!db) return;
-
-        try {
-            const formData = getFormData();
-            const eventsCollectionRef = collection(db, `artifacts/${appId}/public/data/events`);
-
-            await setDoc(doc(eventsCollectionRef), {
-                ...formData,
-                criadoEm: new Date(),
-                criadoPor: auth.currentUser?.uid || 'anonimo'
-            });
-
-            alert('Evento criado com sucesso!');
-            window.location.href = 'dashboard.html';
-        } catch (error) {
-            console.error('Erro ao criar evento:', error);
-            alert('Erro ao criar evento.');
-        }
-    }
-
-    // Função para atualizar evento existente
-    async function updateEvent() {
-        if (!db || !currentEventId) return;
-
-        try {
-            const formData = getFormData();
-            const eventDocRef = doc(db, `artifacts/${appId}/public/data/events`, currentEventId);
-
-            await updateDoc(eventDocRef, {
-                ...formData,
-                atualizadoEm: new Date(),
-                atualizadoPor: auth.currentUser?.uid || 'anonimo'
-            });
-
-            alert('Evento atualizado com sucesso!');
-            window.location.href = 'dashboard.html';
-        } catch (error) {
-            console.error('Erro ao atualizar evento:', error);
-            alert('Erro ao atualizar evento.');
-        }
-    }
-
-    // Obtém dados do formulário
-    function getFormData() {
-        return {
-            nomeEvento: document.querySelector('input[type="text"]').value,
-            prioridade: document.querySelector('input[name="prioridade"]:checked')?.nextElementSibling.textContent,
-            secretaria: document.querySelector('select').value,
-            tipoEvento: document.querySelectorAll('select')[1].value,
-            categoria: document.querySelectorAll('select')[2].value,
-            descricao: document.querySelector('textarea').value,
-            dataHoraInicio: new Date(document.getElementById('dataHoraInicio').value),
-            dataHoraTermino: new Date(document.getElementById('dataHoraTermino').value),
-            cep: document.getElementById('cep').value,
-            endereco: document.getElementById('endereco').value,
-            numero: document.getElementById('numero').value,
-            bairro: document.getElementById('bairro').value,
-            complemento: document.getElementById('complemento').value
-        };
-    }
-</script>
+    </script>
+}
